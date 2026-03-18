@@ -115,6 +115,15 @@ void path_prepend(char* path) {
     path[2] = '\\';
 }
 
+bool strscmp(const char* str, const char* check, const int count) {
+    for (int i = 0; i < count; i++) {
+        if (str[i] != check[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // IO
 
 static inline uint8_t inb(uint16_t port) {
@@ -268,37 +277,31 @@ void print_time() {
 void run_command() {
     putchar('\n');
 
-    if (strcmp(cmd_buffer, "help")) {
+    if (strscmp(cmd_buffer, "help", 4)) {
         println("Commands:");
-        println("help :: This page!");
-        println("about :: OS information");
-        println("calc :: Simple calculator");
-        println("clear :: Clears the screen");
-        println("time :: Display current time and date");
-        println("wordle :: Plays a game of Wordle");
-        println(" ");
-        println("read :: Reads a file");
-        println("ls :: Simple FEX");
-        println("mkr :: Make a new text file");
-        println("rmf :: Delete a file");
-        println(" ");
-        println("reboot :: Reboots system");
-        println("shutdown :: Shuts down system");
+        println("help : This page!                     |  about : OS information");
+        println("calc : Simple calculator              |  clear : Clears the screen");
+        println("time : Display current time and date  |  wordle : Plays a game of Wordle");
+        println("                                      |");
+        println("read : Reads a file                   |  ls : Simple FEX");
+        println("mkr : Make a new text file            |  rmf : Delete a file");
+        println("                                      |");
+        println("reboot : Reboots system               |  shutdown : Shuts down system");
     }
-    else if (strcmp(cmd_buffer, "clear")) clear_screen();
-    else if (strcmp(cmd_buffer, "about")) {
+    else if (strscmp(cmd_buffer, "clear", 5)) clear_screen();
+    else if (strscmp(cmd_buffer, "about", 5)) {
         println("Molecular Multiverse Services OS: developed by the the MMS team with C.");
         println("If you need support, contact therealiodinemacer or join ZAx3NN5TJY on Discord.");
     }
-    else if (strcmp(cmd_buffer, "read")) read();
-    else if (strcmp(cmd_buffer, "ls")) vfs_list_files();
-    else if (strcmp(cmd_buffer, "time")) print_time();
-    else if (strcmp(cmd_buffer, "calc")) run_calc();
-    else if (strcmp(cmd_buffer, "wordle")) run_wordle();
-    else if (strcmp(cmd_buffer, "rmf")) rmf();
-    else if (strcmp(cmd_buffer, "mkf")) mkf();
-    else if (strcmp(cmd_buffer, "shutdown")) shutdown();
-    else if (strcmp(cmd_buffer, "reboot")) reboot();
+    else if (strscmp(cmd_buffer, "read", 4)) read();
+    else if (strscmp(cmd_buffer, "ls", 2)) vfs_list_files();
+    else if (strscmp(cmd_buffer, "time", 4)) print_time();
+    else if (strscmp(cmd_buffer, "calc", 4)) run_calc();
+    else if (strscmp(cmd_buffer, "wordle", 6)) run_wordle();
+    else if (strscmp(cmd_buffer, "rmf", 3)) rmf();
+    else if (strscmp(cmd_buffer, "mkf", 3)) mkf();
+    else if (strscmp(cmd_buffer, "shutdown", 8)) shutdown();
+    else if (strscmp(cmd_buffer, "reboot", 6)) reboot();
     else println("Unknown command");
 
     println("");

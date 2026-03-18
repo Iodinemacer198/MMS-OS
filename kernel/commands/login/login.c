@@ -26,12 +26,16 @@ int usin_index = 0;
 char psin_buffer[PSIN_BUFFER];
 int psin_index = 0;
 
+#define DOTS 20
+char dots[DOTS];
+int dots_index = 0;
+
 char username_buffer[20];
 char password_buffer[20];
 
 void handle_login() {
     if (vfs_read_file("0:\\password.ini", password_buffer) && vfs_read_file("0:\\username.ini", username_buffer)) {
-        print("Username > ");
+        print("Username: ");
         bool userrunning = true;
         while (userrunning) {
             char key = get_key();
@@ -73,7 +77,7 @@ void handle_login() {
             }
         }
         putchar('\n');
-        print("Password > ");
+        print("Password: ");
         bool passrunning = true;
         while (passrunning) {
             char key = get_key();
@@ -106,7 +110,7 @@ void handle_login() {
             }
             else if (key) {
                 if (psin_index <= 20) {
-                    putchar(key);
+                    putchar('*');
                     psin_buffer[psin_index] = key;
                     psin_index++;
                 }
@@ -120,7 +124,7 @@ void handle_login() {
         }
     }
     else {
-        print("New Username > ");
+        print("New Username: ");
         bool userrunning = true;
         while (userrunning) {
             char key = get_key();
@@ -153,7 +157,7 @@ void handle_login() {
             }
         }
         putchar('\n');
-        print("New Password > ");
+        print("New Password: ");
         bool passrunning = true;
         while (passrunning) {
             char key = get_key();

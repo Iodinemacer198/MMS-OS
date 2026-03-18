@@ -25,7 +25,7 @@ int calc_index3 = 0;
 
 void run_calc() {
     println("=== Calculator ===");
-    print("First number > ");
+    print("First number: ");
     bool running = true;
     int first_number = 0;
     while (running) {
@@ -57,7 +57,7 @@ void run_calc() {
         }
     }
     putchar('\n');
-    print("Second number > "); 
+    print("Second number: "); 
     bool running2 = true;
     int second_number = 0;
     while (running2) {
@@ -160,7 +160,7 @@ void run_calc() {
         }
     }
     putchar('\n');
-    print("Answer > ");
+    print("Answer: ");
     printint(output); 
     calc_index = 0;
     calc_index2 = 0;
