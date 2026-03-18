@@ -9,6 +9,8 @@ extern char get_key();
 extern bool isdigit(char c);
 extern void putchar(char c);
 
+extern int cursorX;
+
 #define CALC_BUFFER 128
 char calc_buffer[CALC_BUFFER];
 int calc_index = 0;
@@ -37,6 +39,15 @@ void run_calc() {
             calc_buffer[calc_index] = key;
             calc_index++;
         }
+        else if (key == 8) {
+            if (calc_index > 0) {
+                calc_index--;
+                calc_buffer[calc_index] = '\0';
+                cursorX--;
+                putchar(' ');
+                cursorX--;
+            }
+        }
         else if (key == '\n') {
             first_number = atoi(calc_buffer);
             running = false;
@@ -63,6 +74,15 @@ void run_calc() {
         else if (key == '\n') {
             second_number = atoi(calc_buffer2);
             running2 = false;
+        }
+        else if (key == 8) {
+            if (calc_index2 > 0) {
+                calc_index2--;
+                calc_buffer2[calc_index2] = '\0';
+                cursorX--;
+                putchar(' ');
+                cursorX--;
+            }
         }
         else {
             continue;
@@ -93,6 +113,15 @@ void run_calc() {
             else
             {
                 continue;
+            }
+        }
+        else if (key == 8) {
+            if (calc_index3 > 0) {
+                calc_index3--;
+                calc_buffer3[calc_index3] = '\0';
+                cursorX--;
+                putchar(' ');
+                cursorX--;
             }
         }
         else if (key == '\n') {

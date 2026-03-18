@@ -4,6 +4,7 @@
 #include "calc.h"
 #include "login.h"
 #include "wordle.h"
+#include "fsc.h"
 
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
@@ -290,58 +291,7 @@ void run_command() {
         println("If you need support, contact therealiodinemacer or join ZAx3NN5TJY on Discord.");
     }
     else if (strcmp(cmd_buffer, "read")) {
-        print("File path: ");
-        char path[64] = "";
-        int path_index = 0;
-        bool running = true;
-        while (running) {
-            char key = get_key();
-
-            if (!key) {
-                continue;
-            }
-            if (key == '\n') {
-                path_prepend(path);
-                running = false;
-            }
-            else if (key == 8) {
-                if (path_index > 0) {
-                    path_index--;
-                    path[path_index] = '\0';
-                    cursorX--;
-                    putchar(' ');
-                    cursorX--;
-                }
-            }
-            else {
-                putchar(key);
-                path[path_index] = key;
-                path_index++;
-            }
-        }
-        char read_buffer[512];
-        if (strcmp(path, "0:\\password.ini") || strcmp(path, "0:\\username.ini")) {
-            putchar('\n');
-            print("Error: ");
-            print(path);
-            print(" not found.");
-            putchar('\n');
-        }
-        else if (vfs_read_file(path, read_buffer)) {
-            putchar('\n');
-            println(read_buffer);
-        } 
-        else {
-            putchar('\n');
-            print("Error: ");
-            print(path);
-            print(" not found.");
-            putchar('\n');
-        }
-        for (int i = 0; i < 64; i++) {
-            path[i] = 0;
-        }
-        path_index = 0;
+        read();
     }
     else if (strcmp(cmd_buffer, "ls")) {
         vfs_list_files();
@@ -357,80 +307,7 @@ void run_command() {
         run_wordle();
     }
     else if (strcmp(cmd_buffer, "mkf")) {
-        print("File name: ");
-        char path2[64] = "";
-        int path2_index = 0;
-        bool running2 = true;
-        while (running2) {
-            char key = get_key();
-
-            if (!key) {
-                continue;
-            }
-            if (key == '\n') {
-                path_prepend(path2);
-                running2 = false;
-            }
-            else if (key == 8) {
-                if (path2_index > 0) {
-                    path2_index--;
-                    path2[path2_index] = '\0';
-                    cursorX--;
-                    putchar(' ');
-                    cursorX--;
-                }
-            }
-            else {
-                putchar(key);
-                path2[path2_index] = key;
-                path2_index++;
-            }
-        }
-        char temp[512] = "";
-        if (vfs_read_file(path2, temp)) {
-            println("A file with this name already exists!");
-        } else {
-            if (vfs_write_file(path2, "")) {
-                putchar('\n');
-                print(path2);
-                println(" successfully created!");
-            } else {
-                println("Error: Could not create file.");
-            }
-        }
-        char path3[64] = "";
-        int path3_index = 0;
-        print("Write contents: ");
-        bool running3 = true;
-        while (running3) {
-            char key = get_key();
-
-            if (!key) {
-                continue;
-            }
-            if (key == '\n') {
-                running3 = false;
-            }
-            else if (key == 8) {
-                if (path3_index > 0) {
-                    path3_index--;
-                    path3[path3_index] = '\0';
-                    cursorX--;
-                    putchar(' ');
-                    cursorX--;
-                }
-            }
-            else {
-                putchar(key);
-                path3[path3_index] = key;
-                path3_index++;
-            }
-        }
-        vfs_write_file(path2, path3);
-        putchar('\n');
-        print("Contents successfully written to ");
-        print(path2);
-        putchar('\n');
+        mkf();
     }
     else if (strcmp(cmd_buffer, "shutdown")) shutdown();
     else if (strcmp(cmd_buffer, "reboot")) reboot();
