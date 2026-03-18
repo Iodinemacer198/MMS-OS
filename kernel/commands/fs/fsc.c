@@ -12,6 +12,7 @@ extern bool vfs_read_file(const char* path, char* buffer_out);
 extern void path_prepend(char* path);
 extern void putchar(char c);
 extern char get_key();
+extern bool vfs_delete_file(const char* path);
 
 extern int cursorX;
 
@@ -145,4 +146,45 @@ void read() {
         path[i] = 0;
     }
     path_index = 0;
+}
+
+void rmf() {
+    print("File name: ");
+    char path2[64] = "";
+    int path2_index = 0;
+    bool running2 = true;
+    while (running2) {
+        char key = get_key();
+
+        if (!key) {
+            continue;
+        }
+        if (key == '\n') {
+            path_prepend(path2);
+            running2 = false;
+        }
+        else if (key == 8) {
+            if (path2_index > 0) {
+                path2_index--;
+                path2[path2_index] = '\0';
+                cursorX--;
+                putchar(' ');
+                cursorX--;
+            }
+        }
+        else {
+            putchar(key);
+            path2[path2_index] = key;
+            path2_index++;
+        }
+    }
+    if (!vfs_delete_file(path2)) {
+        putchar('\n');
+        println("This file doesn't exit!");
+    } else {
+        putchar('\n');
+        print("Successfully deleted ");
+        print(path2);
+        putchar('\n');
+    }
 }

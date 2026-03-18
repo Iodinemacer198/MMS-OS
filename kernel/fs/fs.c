@@ -124,3 +124,18 @@ void vfs_list_files() {
     if(empty) println("No files found.");
     println("---------------------------");
 }
+
+bool vfs_delete_file(const char* path) {
+    for (int i = 0; i < VFS_MAX_FILES; i++) {
+        if (current_dir.files[i].exists && strcmp(current_dir.files[i].path, path)) {
+            current_dir.files[i].exists = false;
+            current_dir.files[i].size = 0;
+            for (int j = 0; j < 32; j++) {
+                current_dir.files[i].path[j] = '\0';
+            }
+            ata_write_sector(1, (uint8_t*)&current_dir);
+            return true; 
+        }
+    }
+    return false; 
+}

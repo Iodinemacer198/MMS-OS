@@ -6,5 +6,6 @@
 
 void mkf();
 void read();
+void rmf();
 
 #endif

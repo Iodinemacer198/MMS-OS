@@ -279,41 +279,27 @@ void run_command() {
         println(" ");
         println("read :: Reads a file");
         println("ls :: Simple FEX");
+        println("mkr :: Make a new text file");
+        println("rmf :: Delete a file");
         println(" ");
         println("reboot :: Reboots system");
         println("shutdown :: Shuts down system");
     }
-    else if (strcmp(cmd_buffer, "clear")) {
-        clear_screen();
-    }
+    else if (strcmp(cmd_buffer, "clear")) clear_screen();
     else if (strcmp(cmd_buffer, "about")) {
         println("Molecular Multiverse Services OS: developed by the the MMS team with C.");
         println("If you need support, contact therealiodinemacer or join ZAx3NN5TJY on Discord.");
     }
-    else if (strcmp(cmd_buffer, "read")) {
-        read();
-    }
-    else if (strcmp(cmd_buffer, "ls")) {
-        vfs_list_files();
-    }
-    else if (strcmp(cmd_buffer, "time")) {
-        print_time();
-    }
-    else if (strcmp(cmd_buffer, "calc")) {
-        // clear_screen();
-        run_calc();
-    }
-    else if (strcmp(cmd_buffer, "wordle")) {
-        run_wordle();
-    }
-    else if (strcmp(cmd_buffer, "mkf")) {
-        mkf();
-    }
+    else if (strcmp(cmd_buffer, "read")) read();
+    else if (strcmp(cmd_buffer, "ls")) vfs_list_files();
+    else if (strcmp(cmd_buffer, "time")) print_time();
+    else if (strcmp(cmd_buffer, "calc")) run_calc();
+    else if (strcmp(cmd_buffer, "wordle")) run_wordle();
+    else if (strcmp(cmd_buffer, "rmf")) rmf();
+    else if (strcmp(cmd_buffer, "mkf")) mkf();
     else if (strcmp(cmd_buffer, "shutdown")) shutdown();
     else if (strcmp(cmd_buffer, "reboot")) reboot();
-    else {
-        println("Unknown command");
-    }
+    else println("Unknown command");
 
     println("");
     print("shell > ");
