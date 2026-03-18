@@ -4,15 +4,16 @@ Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP opera
 This project is the C cousin in MMS-COSMOS (private project), which should allow for more developmental freedom, at the cost of convenience.
 
 ## Features & Overview
-- Command line interface with some commands
-- A simple calculator
+- Command line interface like setup
+- Calculator
 - Wordle game
-- Basic file and login system
+- Basic file system with commands
+- Login system
 
 ## Use/Build instructions
 **Use from release ISO:** (iso/output)
 - Load ISO in your system of choice. It should work fine out the box.
-- This OS has been successfully tested in VMware and Qemu. I cannot guarantee its success in another VM or on, God forbid you try, actual hardware.
+- This OS has been successfully tested in Qemu and to some extent VMware. I cannot guarantee its success in another VM or on, God forbid you try, actual hardware.
 
 **Build from source:**
 - Requires a Linux system or Windows Subsystem for Linux
