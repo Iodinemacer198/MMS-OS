@@ -1,9 +1,7 @@
 # MMS-OS
-Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP operating system made with C
+Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP operating system made with C.
 
-This project is the C cousin in MMS-COSMOS (private project), which should allow for more developmental freedom, at the cost of convenience.
-
-## Features & Overview
+## Current Features & Overview
 - Command line interface like setup
 - Calculator
 - Wordle game
@@ -28,10 +26,11 @@ This project is developed and maintained by the Molecular Multiverse Services te
 For any questions, suggestions, issues, etc, feel free to reach out to @therealiodinemacer on Discord or join our server [here](https://discord.gg/ZAx3NN5TJY))
 
 ## Roadmap
-- Port CLI features from MMS-COSMOS
+- Better filesystem (preferably FAT)
+- Possible graphics implementations
 
 ## Disclaimers
-MMS-OS is a VERY work-in-progress project. Lag, bugs, etc are to be expected. As more of a hobby project, also expect slow progress and a lack of functionality (especially now that we are working in C). This project is just for fun, don't expect much :)
+MMS-OS is a VERY work-in-progress project. Lag, bugs, etc are to be expected. As more of a hobby project, also expect slow progress and a lack of functionality. This project is just for fun, don't expect much :)
 
 Some AI was used in the making of this project, especially with parts of the initial setup. I really don't know too much of C, and this is the easiest way for me to learn the language while also making progress. Outside of the initial setup and some other miscellaneous components, it is however entirely my work. If you doubt that, check some of the scripts, there's no way anyone other than a stupid human could make some of those...
 
