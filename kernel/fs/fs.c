@@ -6,6 +6,12 @@ extern void print(const char* str);
 extern void println(const char* str);
 extern void printint(int num);
 extern bool strcmp(const char* a, const char* b);
+extern void reboot();
+extern void putchar(char c);
+extern char get_key();
+extern void sleep();
+
+extern int cursorX;
 
 int strlen(const char* str) {
     int len = 0;
@@ -188,4 +194,52 @@ int vfs_file_count() {
     }
 
     return count;
+}
+
+void vfs_reset() {
+    print("Are you sure you would like to reset this system? (y/n): ");
+    char ans[64] = "";
+    int ans_index = 0;
+    bool running = true;
+    while (running) {
+        char key = get_key();
+
+        if (!key) {
+            continue;
+        }
+        if (key == '\n') {
+            running = false;
+        }
+        else if (key == 8) {
+            if (ans_index > 0) {
+                ans_index--;
+                ans[ans_index] = '\0';
+                cursorX--;
+                putchar(' ');
+                cursorX--;
+            }
+        }
+        else if ((key == 'y' || key == 'n') && ans_index <= 1) {
+            putchar(key);
+            ans[ans_index] = key;
+            ans_index++;
+        }
+        else {
+            continue;
+        }
+    }
+    if (strcmp(ans, "y")) {
+        for (int i = 0; i < VFS_MAX_FILES; i++) {
+            if (current_dir.files[i].exists) {
+                vfs_delete_file(current_dir.files[i].path);
+            }
+        }
+        vfs_write_file("0:\\test.txt", "Hello, curious user!");
+        vfs_write_file("0:\\ode.md", "370 400\n370 400\n392 400\n440 400\n440 400\n392 400\n370 400\n330 400\n294 400\n294 400\n330 400\n370 400\n370 600\n330 200\n330 800");
+        putchar('\n');
+        println("System reset. Rebooting...");
+        sleep(20000);
+        reboot();
+    }
+    else println("");
 }

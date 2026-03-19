@@ -360,6 +360,7 @@ void run_command() {
         println("mkf : Make a new text file            |  rmf : Delete a file");
         println("                                      |");
         println("reboot : Reboots system               |  shutdown : Shuts down system");
+        println("reset : Resets system completely      |");
     }
     else if (strscmp(cmd_buffer, "clear", 5)) clear_screen();
     else if (strscmp(cmd_buffer, "about", 5)) {
@@ -376,10 +377,11 @@ void run_command() {
     else if (strscmp(cmd_buffer, "shutdown", 8)) shutdown();
     else if (strscmp(cmd_buffer, "reboot", 6)) reboot();
     else if (strscmp(cmd_buffer, "music", 5)) play_music("0:\\ode.md");
+    else if (strscmp(cmd_buffer, "reset", 5)) vfs_reset();
     else println("Unknown command");
 
-    println("");
-    print("shell > ");
+    //println("");
+    print("0:\\ > ");
 
     cmd_index = 0;
 
@@ -424,7 +426,7 @@ void kernel_main() {
     println("Welcome to MMS-OS!");
     print_time();
     println("Type 'help' for commands");
-    print("shell > ");
+    print("0:\\ > ");
 
     while (1) {
         char key = get_key();
