@@ -6,6 +6,7 @@ Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP opera
 - Calculator
 - Wordle game
 - Basic file system with commands
+- Tiny C bytecode compiler and runtime commands (`cc` and `cexec`)
 - Login system
 
 ## Use/Build instructions
@@ -39,3 +40,9 @@ Some AI was used in the making of this project, especially with parts of the ini
 
 
 
+
+## Tiny C support
+- Create a `.c` file with `mkf`, or use the seeded `demo.c` after a fresh disk format/reset.
+- Run `cc` to compile a source file into a `.tbc` bytecode file.
+- Run `cexec` to execute a compiled `.tbc` file.
+- Current supported C subset: `int main()`, integer variables, assignment, `+ - * /`, `print`, `println`, `printint`, `beep`, `sleep`, `clear`, and `return`.

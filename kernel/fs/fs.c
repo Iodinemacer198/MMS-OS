@@ -60,6 +60,7 @@ void vfs_init() {
         
         vfs_write_file("0:\\test.txt", "Hello, curious user!");
         vfs_write_file("0:\\ode.md", "370 400\n370 400\n392 400\n440 400\n440 400\n392 400\n370 400\n330 400\n294 400\n294 400\n330 400\n370 400\n370 600\n330 200\n330 800");
+        vfs_write_file("0:\\demo.c", "int main() {\nprintln(\"Hello from Tiny C!\");\nint answer = 2 + 3 * 4;\nprintint(answer);\nprintln(\"\");\nreturn answer;\n}");
     } else {
         println("Disk mounted successfully.");
     }
@@ -236,6 +237,7 @@ void vfs_reset() {
         }
         vfs_write_file("0:\\test.txt", "Hello, curious user!");
         vfs_write_file("0:\\ode.md", "370 400\n370 400\n392 400\n440 400\n440 400\n392 400\n370 400\n330 400\n294 400\n294 400\n330 400\n370 400\n370 600\n330 200\n330 800");
+        vfs_write_file("0:\\demo.c", "int main() {\nprintln(\"Hello from Tiny C!\");\nint answer = 2 + 3 * 4;\nprintint(answer);\nprintln(\"\");\nreturn answer;\n}");
         putchar('\n');
         println("System reset. Rebooting...");
         sleep(20000);

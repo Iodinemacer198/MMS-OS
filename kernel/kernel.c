@@ -5,6 +5,7 @@
 #include "login.h"
 #include "wordle.h"
 #include "fsc.h"
+#include "tinycc.h"
 
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
@@ -354,8 +355,8 @@ void run_command() {
         println("help : This page!                     |  about : OS information");
         println("calc : Simple calculator              |  clear : Clears the screen");
         println("time : Display current time and date  |  wordle : Plays a game of Wordle");
-        println("music : Plays a test music file       |");
-        println("                                      |");
+        println("music : Plays a test music file       |  cc : Build a Tiny C source file");
+        println("                                      |  cexec : Run a compiled Tiny C file");
         println("read : Reads a file                   |  ls : Simple FEX");
         println("mkf : Make a new text file            |  rmf : Delete a file");
         println("                                      |");
@@ -374,6 +375,8 @@ void run_command() {
     else if (strscmp(cmd_buffer, "wordle", 6)) run_wordle();
     else if (strscmp(cmd_buffer, "rmf", 3)) rmf();
     else if (strscmp(cmd_buffer, "mkf", 3)) mkf();
+    else if (strscmp(cmd_buffer, "cc", 2)) run_tcc_build();
+    else if (strscmp(cmd_buffer, "cexec", 5)) run_tcc_exec();
     else if (strscmp(cmd_buffer, "shutdown", 8)) shutdown();
     else if (strscmp(cmd_buffer, "reboot", 6)) reboot();
     else if (strscmp(cmd_buffer, "music", 5)) play_music("0:\\ode.md");
