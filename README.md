@@ -42,7 +42,7 @@ Some AI was used in the making of this project, especially with parts of the ini
 
 
 ## Tiny C support
-- Create a `.c` file with `mkf`, or use the seeded `demo.c` after a fresh disk format/reset.
+- Create a `.c` file with `mkf`, or use the seeded `demo.c` after a fresh disk format/reset (and the OS now re-seeds it on older disks too).
 - Run `cc` to compile a source file into a `.tbc` bytecode file.
 - Run `cexec` to execute a compiled `.tbc` file.
-- Current supported C subset: `int main()`, integer variables, assignment, `+ - * /`, `print`, `println`, `printint`, `beep`, `sleep`, `clear`, and `return`.
+- Current supported C subset: `int main()` / `void main()`, integer variables, assignment, `+ - * /`, `print`, `println`, `printint`, `beep`, `sleep`, `clear`, and `return`.

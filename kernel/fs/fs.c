@@ -47,6 +47,29 @@ typedef struct {
 DirectoryTable current_dir;
 uint8_t io_buffer[SECTOR_SIZE];
 
+static const char* default_demo_source =
+    "int main() {\n"
+    "println(\"Hello from Tiny C!\");\n"
+    "int answer = 2 + 3 * 4;\n"
+    "printint(answer);\n"
+    "println(\"\");\n"
+    "return answer;\n"
+    "}";
+
+static void vfs_seed_defaults() {
+    char read_buffer[SECTOR_SIZE + 1];
+
+    if (!vfs_read_file("0:\\test.txt", read_buffer)) {
+        vfs_write_file("0:\\test.txt", "Hello, curious user!");
+    }
+    if (!vfs_read_file("0:\\ode.md", read_buffer)) {
+        vfs_write_file("0:\\ode.md", "370 400\n370 400\n392 400\n440 400\n440 400\n392 400\n370 400\n330 400\n294 400\n294 400\n330 400\n370 400\n370 600\n330 200\n330 800");
+    }
+    if (!vfs_read_file("0:\\demo.c", read_buffer) || !strcmp(read_buffer, default_demo_source)) {
+        vfs_write_file("0:\\demo.c", default_demo_source);
+    }
+}
+
 void vfs_init() {
     ata_read_sector(1, (uint8_t*)&current_dir);
 
@@ -57,13 +80,11 @@ void vfs_init() {
             current_dir.files[i].exists = false;
         }
         ata_write_sector(1, (uint8_t*)&current_dir);
-        
-        vfs_write_file("0:\\test.txt", "Hello, curious user!");
-        vfs_write_file("0:\\ode.md", "370 400\n370 400\n392 400\n440 400\n440 400\n392 400\n370 400\n330 400\n294 400\n294 400\n330 400\n370 400\n370 600\n330 200\n330 800");
-        vfs_write_file("0:\\demo.c", "int main() {\nprintln(\"Hello from Tiny C!\");\nint answer = 2 + 3 * 4;\nprintint(answer);\nprintln(\"\");\nreturn answer;\n}");
     } else {
         println("Disk mounted successfully.");
     }
+
+    vfs_seed_defaults();
 }
 
 bool vfs_write_file(const char* path, const char* data) {
@@ -235,9 +256,7 @@ void vfs_reset() {
                 vfs_delete_file(current_dir.files[i].path);
             }
         }
-        vfs_write_file("0:\\test.txt", "Hello, curious user!");
-        vfs_write_file("0:\\ode.md", "370 400\n370 400\n392 400\n440 400\n440 400\n392 400\n370 400\n330 400\n294 400\n294 400\n330 400\n370 400\n370 600\n330 200\n330 800");
-        vfs_write_file("0:\\demo.c", "int main() {\nprintln(\"Hello from Tiny C!\");\nint answer = 2 + 3 * 4;\nprintint(answer);\nprintln(\"\");\nreturn answer;\n}");
+        vfs_seed_defaults();
         putchar('\n');
         println("System reset. Rebooting...");
         sleep(20000);

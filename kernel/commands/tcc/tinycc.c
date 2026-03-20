@@ -392,6 +392,14 @@ static bool tiny_parse_call_stmt(TinyParser* parser, const char* name) {
     return tiny_emit(parser, OP_CALL, builtin->id, arg_count, 0);
 }
 
+static void tiny_skip_bom(TinyParser* parser) {
+    if ((unsigned char)parser->src[parser->pos] == 0xEF &&
+        (unsigned char)parser->src[parser->pos + 1] == 0xBB &&
+        (unsigned char)parser->src[parser->pos + 2] == 0xBF) {
+        parser->pos += 3;
+    }
+}
+
 static bool tiny_parse_statement(TinyParser* parser) {
     char name[TCC_NAME_MAX];
 
@@ -445,11 +453,12 @@ static bool tiny_compile_source(const char* src, TinyInstruction* code, int* cod
     parser.code_count = 0;
     parser.var_count = 0;
 
-    if (!tiny_match_keyword(&parser, "int")) {
-        tiny_set_error(&parser, "Program must start with int main()");
+    tiny_skip_bom(&parser);
+    if (!tiny_match_keyword(&parser, "int") && !tiny_match_keyword(&parser, "void")) {
+        tiny_set_error(&parser, "Program must start with int main() or void main()");
     }
     else if (!tiny_match_keyword(&parser, "main")) {
-        tiny_set_error(&parser, "Only int main() is supported");
+        tiny_set_error(&parser, "Only main() entry points are supported");
     }
     else if (!tiny_expect_char(&parser, '(') || !tiny_expect_char(&parser, ')') || !tiny_expect_char(&parser, '{')) {
     }
@@ -854,7 +863,7 @@ void run_tcc_build() {
     char error[TCC_ERROR_MAX];
 
     println("=== Tiny C build ===");
-    println("Supported subset: int main(), int vars, =, + - * /, print/println/printint/beep/sleep/clear, return.");
+    println("Supported subset: int/void main(), int vars, =, + - * /, print/println/printint/beep/sleep/clear, return.");
     tiny_prompt_path("C source file: ", src_path);
     putchar('\n');
 
