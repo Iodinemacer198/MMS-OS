@@ -885,8 +885,8 @@ void run_tcc_build() {
     char program[TCC_OUTPUT_MAX];
     char error[TCC_ERROR_MAX];
 
-    println("=== Tiny C build ===");
-    println("Supported subset: int/void main() entry point, int vars, =, + - * /, print/println/printint/beep/sleep/clear, return.");
+    println("=== MMSC build ===");
+    println("Supported syntax: int/void main() entry point, int vars, =, + - * /, print/println/printint/beep/sleep/clear, return.");
     tiny_prompt_path("C source file: ", src_path);
     putchar('\n');
 
@@ -921,7 +921,7 @@ void run_tcc_exec() {
     char program[TCC_OUTPUT_MAX];
     int exit_code = 0;
 
-    println("=== Tiny C execute ===");
+    println("=== MMSC execute ===");
     tiny_prompt_path("Compiled file: ", program_path);
     putchar('\n');
 
