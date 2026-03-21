@@ -115,8 +115,8 @@ static void tiny_set_error(TinyParser* parser, const char* msg) {
 
 static void tiny_skip_ws(TinyParser* parser) {
     while (true) {
-        char c = parser->src[parser->pos];
-        if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+        unsigned char c = (unsigned char)parser->src[parser->pos];
+        if ((c <= ' ' && c != '\0') || c == 127) {
             parser->pos++;
             continue;
         }
@@ -400,6 +400,27 @@ static void tiny_skip_bom(TinyParser* parser) {
     }
 }
 
+static bool tiny_seek_main(TinyParser* parser) {
+    TinyParser probe = *parser;
+
+    tiny_skip_bom(&probe);
+    while (probe.src[probe.pos] != '\0') {
+        TinyParser candidate = probe;
+        int start_pos = candidate.pos;
+
+        if ((tiny_match_keyword(&candidate, "int") || tiny_match_keyword(&candidate, "void")) &&
+            tiny_match_keyword(&candidate, "main")) {
+            *parser = candidate;
+            parser->pos = start_pos;
+            return true;
+        }
+
+        probe.pos++;
+    }
+
+    return false;
+}
+
 static bool tiny_parse_statement(TinyParser* parser) {
     char name[TCC_NAME_MAX];
 
@@ -453,9 +474,11 @@ static bool tiny_compile_source(const char* src, TinyInstruction* code, int* cod
     parser.code_count = 0;
     parser.var_count = 0;
 
-    tiny_skip_bom(&parser);
-    if (!tiny_match_keyword(&parser, "int") && !tiny_match_keyword(&parser, "void")) {
-        tiny_set_error(&parser, "Program must start with int main() or void main()");
+    if (!tiny_seek_main(&parser)) {
+        tiny_set_error(&parser, "Could not find an int main() or void main() entry point");
+    }
+    else if (!tiny_match_keyword(&parser, "int") && !tiny_match_keyword(&parser, "void")) {
+        tiny_set_error(&parser, "Only int main() and void main() entry points are supported");
     }
     else if (!tiny_match_keyword(&parser, "main")) {
         tiny_set_error(&parser, "Only main() entry points are supported");
@@ -863,7 +886,7 @@ void run_tcc_build() {
     char error[TCC_ERROR_MAX];
 
     println("=== Tiny C build ===");
-    println("Supported subset: int/void main(), int vars, =, + - * /, print/println/printint/beep/sleep/clear, return.");
+    println("Supported subset: int/void main() entry point, int vars, =, + - * /, print/println/printint/beep/sleep/clear, return.");
     tiny_prompt_path("C source file: ", src_path);
     putchar('\n');
 
