@@ -27,7 +27,7 @@ This project is developed and maintained by the Molecular Multiverse Services te
 For any questions, suggestions, issues, etc, feel free to reach out to @therealiodinemacer on Discord or join our server [here](https://discord.gg/ZAx3NN5TJY))
 
 ## Roadmap
-~~- Better filesystem (preferably FAT)~~
+- ~~Better filesystem (preferably FAT)~~
 - Better command handling
 - Possible graphics implementations
 
