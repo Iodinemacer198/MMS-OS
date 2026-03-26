@@ -10,7 +10,94 @@ extern char get_key();
 extern void path_prepend(char* path);
 extern bool vfs_read_file(const char* path, char* buffer_out);
 extern bool vfs_write_file(const char* path, const char* data);
+#define CMOS_ADDRESS 0x70
+#define CMOS_DATA    0x71
+extern uint8_t get_update_in_progress_flag();
+extern uint8_t get_rtc_register(int reg);
 extern int cursorX;
+
+void test() {
+    println("sup");
+}
+
+static int is_leap(int y) {
+    return (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0));
+}
+
+static int days_in_month(int month, int year) {
+    static int days[] = {
+        31,28,31,30,31,30,31,31,30,31,30,31
+    };
+
+    if (month == 2 && is_leap(year)) return 29;
+    return days[month - 1];
+}
+
+static uint8_t bcd_to_bin(uint8_t val) {
+    return (val & 0x0F) + ((val >> 4) * 10);
+}
+
+void printtimeindex() {
+    uint8_t second, minute, hour, day, month, year;
+    uint8_t last_second;
+    uint8_t regB;
+
+    while (get_update_in_progress_flag());
+
+    do {
+        last_second = get_rtc_register(0x00);
+
+        second = get_rtc_register(0x00);
+        minute = get_rtc_register(0x02);
+        hour   = get_rtc_register(0x04);
+        day    = get_rtc_register(0x07);
+        month  = get_rtc_register(0x08);
+        year   = get_rtc_register(0x09);
+
+    } while (last_second != second);
+
+    regB = get_rtc_register(0x0B);
+
+    if (!(regB & 0x04)) {
+        second = bcd_to_bin(second);
+        minute = bcd_to_bin(minute);
+        hour   = bcd_to_bin(hour & 0x7F) | (hour & 0x80);
+        day    = bcd_to_bin(day);
+        month  = bcd_to_bin(month);
+        year   = bcd_to_bin(year);
+    }
+
+    if (!(regB & 0x02)) {
+        bool pm = hour & 0x80;
+        hour &= 0x7F;
+
+        if (pm && hour < 12) hour += 12;
+        if (!pm && hour == 12) hour = 0;
+    }
+
+    int full_year = 2000 + year;
+
+    uint32_t days = 0;
+
+    for (int y = 1970; y < full_year; y++) {
+        days += is_leap(y) ? 366 : 365;
+    }
+
+    for (int m = 1; m < month; m++) {
+        days += days_in_month(m, full_year);
+    }
+
+    days += (day - 1);
+
+    uint32_t unix1 =
+        days * 86400 +
+        hour * 3600 +
+        minute * 60 +
+        second;
+
+    printint(unix1);
+    println("");
+}
 
 #define TCC_INPUT_MAX 64
 #define TCC_SOURCE_MAX 512
@@ -41,7 +128,9 @@ typedef enum {
     BUILTIN_PRINTINT = 2,
     BUILTIN_BEEP = 3,
     BUILTIN_SLEEP = 4,
-    BUILTIN_CLEAR = 5
+    BUILTIN_CLEAR = 5,
+    BUILTIN_TEST = 6,
+    BUILTIN_TIME = 7
 } TinyBuiltinId;
 
 typedef struct {
@@ -75,6 +164,8 @@ static const TinyBuiltin tiny_builtins[] = {
     {"beep", BUILTIN_BEEP, 2, false},
     {"sleep", BUILTIN_SLEEP, 1, false},
     {"clear", BUILTIN_CLEAR, 0, false},
+    {"test", BUILTIN_TEST, 0, false},
+    {"time", BUILTIN_TIME, 0, false},
 };
 
 static bool tiny_streq(const char* a, const char* b) {
@@ -675,6 +766,14 @@ static bool tiny_vm_call(int builtin_id, int* stack, int* sp, const char* text, 
         println(text);
         return true;
     }
+    if (builtin_id == BUILTIN_TEST) {
+        print("sup");
+        return true;
+    }
+    if (builtin_id == BUILTIN_TIME) {
+        printtimeindex();
+        return true;
+    }
     if (builtin_id == BUILTIN_CLEAR) {
         extern void clear_screen();
         clear_screen();
@@ -886,7 +985,7 @@ void run_tcc_build() {
     char error[TCC_ERROR_MAX];
 
     println("=== MMSC build ===");
-    println("Supported syntax: int/void main() entry point, int vars, =, + - * /, print/println/printint/beep/sleep/clear, return.");
+    println("Supported syntax: int/void main() entry point, int vars, =, + - * /, print/println/printint/beep/sleep/clear/test, return.");
     tiny_prompt_path("C source file: ", src_path);
     putchar('\n');
 

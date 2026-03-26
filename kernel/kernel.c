@@ -101,16 +101,13 @@ void clear_screen() {
 }
 
 void path_prepend(char* path) {
-    // Find length of current string
     int len = 0;
     while (path[len] != '\0') len++;
 
-    // Shift existing string forward by 4 chars
     for (int i = len; i >= 0; i--) {
-        path[i + 3] = path[i]; // include null terminator
+        path[i + 3] = path[i];
     }
 
-    // Add "0://"
     path[0] = '0';
     path[1] = ':';
     path[2] = '\\';
