@@ -128,10 +128,12 @@ static bool str_starts_with(const char* str, const char* pref) {
     return true;
 }
 
+/*
 static char to_upper_ascii(char c) {
     if (c >= 'a' && c <= 'z') return (char)(c - ('a' - 'A'));
     return c;
 }
+*/
 
 static void mem_zero(uint8_t* ptr, int len) {
     for (int i = 0; i < len; i++) ptr[i] = 0;
@@ -253,7 +255,8 @@ static bool format_name_83(const char* component, char out[11]) {
         if (c < 33 || c == '"' || c == '*' || c == '+' || c == ',' || c == '/' || c == ':' || c == ';' || c == '<' || c == '=' || c == '>' || c == '?' || c == '[' || c == '\\' || c == ']' || c == '|') {
             return false;
         }
-        out[base_len++] = to_upper_ascii(c);
+        //out[base_len++] = to_upper_ascii(c);
+        out[base_len++] = c;
         i++;
     }
 
@@ -268,7 +271,8 @@ static bool format_name_83(const char* component, char out[11]) {
             if (c < 33 || c == '"' || c == '*' || c == '+' || c == ',' || c == '/' || c == ':' || c == ';' || c == '<' || c == '=' || c == '>' || c == '?' || c == '[' || c == '\\' || c == ']' || c == '|') {
                 return false;
             }
-            out[8 + ext_len++] = to_upper_ascii(c);
+            //out[8 + ext_len++] = to_upper_ascii(c);
+            out[8 + ext_len++] = c;
             i++;
         }
     }

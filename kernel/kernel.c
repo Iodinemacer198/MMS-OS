@@ -444,8 +444,8 @@ void run_command() {
     else if (strscmp(cmd_buffer, "wordle", 6)) run_wordle();
     else if (strscmp(cmd_buffer, "rmf", 3)) rmf(getarg(cmd_buffer, 3));
     else if (strscmp(cmd_buffer, "mkf", 3)) mkf(getarg(cmd_buffer, 3));
-    else if (strscmp(cmd_buffer, "cc", 2)) run_tcc_build();
-    else if (strscmp(cmd_buffer, "cexec", 5)) run_tcc_exec();
+    else if (strscmp(cmd_buffer, "cc", 2)) run_tcc_build(getarg(cmd_buffer, 2));
+    else if (strscmp(cmd_buffer, "cexec", 5)) run_tcc_exec(getarg(cmd_buffer, 5));
     else if (strscmp(cmd_buffer, "shutdown", 8)) shutdown();
     else if (strscmp(cmd_buffer, "reboot", 6)) reboot();
     else if (strscmp(cmd_buffer, "music", 5)) play_music("0:\\music\\ode.md");

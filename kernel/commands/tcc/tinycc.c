@@ -930,6 +930,7 @@ static bool tiny_execute_program(const char* program, int* exit_code) {
     return false;
 }
 
+/*
 static void tiny_prompt_path(const char* label, char* out_path) {
     int index = 0;
     bool running = true;
@@ -959,6 +960,7 @@ static void tiny_prompt_path(const char* label, char* out_path) {
         }
     }
 }
+*/
 
 static void tiny_make_output_path(const char* src_path, char* out_path) {
     int i = 0;
@@ -977,17 +979,11 @@ static void tiny_make_output_path(const char* src_path, char* out_path) {
     out_path[dot] = '\0';
 }
 
-void run_tcc_build() {
-    char src_path[TCC_INPUT_MAX] = "";
+void run_tcc_build(char* src_path) {
     char out_path[TCC_INPUT_MAX] = "";
     char source[TCC_SOURCE_MAX];
     char program[TCC_OUTPUT_MAX];
     char error[TCC_ERROR_MAX];
-
-    println("=== MMSC build ===");
-    println("Supported syntax: int/void main() entry point, int vars, =, + - * /, print/println/printint/beep/sleep/clear/test, return.");
-    tiny_prompt_path("C source file: ", src_path);
-    putchar('\n');
 
     if (!vfs_read_file(src_path, source)) {
         print("Error: ");
@@ -1015,14 +1011,9 @@ void run_tcc_build() {
     putchar('\n');
 }
 
-void run_tcc_exec() {
-    char program_path[TCC_INPUT_MAX] = "";
+void run_tcc_exec(char* program_path) {
     char program[TCC_OUTPUT_MAX];
     int exit_code = 0;
-
-    println("=== MMSC execute ===");
-    tiny_prompt_path("Compiled file: ", program_path);
-    putchar('\n');
 
     if (!vfs_read_file(program_path, program)) {
         print("Error: ");
