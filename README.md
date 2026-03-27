@@ -28,7 +28,7 @@ For any questions, suggestions, issues, etc, feel free to reach out to @thereali
 
 ## Roadmap
 - ~~Better filesystem (preferably FAT)~~
-- Better command handling
+- ~~Better command handling~~
 - Possible graphics implementations
 
 ## Disclaimers
