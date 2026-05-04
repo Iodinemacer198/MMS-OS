@@ -1135,12 +1135,15 @@ void vgag_run() {
             continue;
         }
         else if (key == 27) {
+            cd("..");
             running = false;
         }
         else if (key == 9) {
             vgag_scblue();
             vgag_intro();
             f1_open = false;
+            f2_open = false;
+            f3_open = false;
         }
         else if (key == 128) {
             cursorX = 11; cursorY = 6;
@@ -1161,6 +1164,7 @@ void vgag_run() {
             vgag_f1();
             f1_open = true;
             f2_open = false;
+            f3_open = false;
             calc_reset();
         }
         else if (key == 129) {
@@ -1182,6 +1186,7 @@ void vgag_run() {
             vgag_f2();
             f2_open = true;
             f1_open = false;
+            f3_open = false;
         }
         else if (key == 130) {
             dcX = 0; dcY = 0;

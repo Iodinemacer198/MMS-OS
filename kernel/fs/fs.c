@@ -105,11 +105,115 @@ static const char* default_demo_source =
     "return answer;\n"
     "}";
 
-static const char* user_demo = 
+static const char* user_demo2 = 
     "void main() {\n"
-    "dputcharc(11, 6, 'h', 0x17);\n"
+    "vgag_box();\n"
+    "dputcharc(21, 8, 'H', 31); dputcharc(22, 8, ' ', 31);\n"
+    "dputcharc(21, 9, 'L', 159); dputcharc(22, 9, 'i', 159);\n"
+    "dputcharc(21, 10, 'N', 159); dputcharc(22, 10, 'a', 159);\n"
+    "dputcharc(21, 11, 'K', 159); dputcharc(22, 11, ' ', 159);\n"
+    "dputcharc(21, 12, 'R', 159); dputcharc(22, 12, 'b', 159);\n"
+    "dputcharc(21, 13, 'C', 159); dputcharc(22, 13, 's', 159);\n"
+    "dputcharc(21, 14, 'F', 159); dputcharc(22, 14, 'r', 159);\n" // end g1
+    "dputcharc(23, 9, 'B', 207); dputcharc(24, 9, 'e', 207);\n"
+    "dputcharc(23, 10, 'M', 207); dputcharc(24, 10, 'g', 207);\n"
+    "dputcharc(23, 11, 'C', 207); dputcharc(24, 11, 'a', 207);\n"
+    "dputcharc(23, 12, 'S', 207); dputcharc(24, 12, 'r', 207);\n"
+    "dputcharc(23, 13, 'B', 207); dputcharc(24, 13, 'a', 207);\n"
+    "dputcharc(23, 14, 'R', 207); dputcharc(24, 14, 'a', 207);\n" // end g2
+    "dputcharc(25, 11, 'S', 95); dputcharc(26, 11, 'c', 95);\n"
+    "dputcharc(25, 12, 'Y', 95); dputcharc(26, 12, ' ', 95);\n"
+    "dputcharc(25, 13, 'L', 177); dputcharc(26, 13, 'a', 177);\n"
+    "dputcharc(25, 14, 'A', 111); dputcharc(26, 14, 'c', 111);\n" // end g4
+    "dputcharc(27, 11, 'T', 95); dputcharc(28, 11, 'i', 95);\n" 
+    "dputcharc(27, 12, 'Z', 95); dputcharc(28, 12, 'r', 95);\n"
+    "dputcharc(27, 13, 'H', 95); dputcharc(28, 13, 'f', 95);\n"
+    "dputcharc(27, 14, 'R', 95); dputcharc(28, 14, 'f', 95);\n" // end g5
+    "dputcharc(29, 11, 'V', 95); dputcharc(30, 11, ' ', 95);\n"
+    "dputcharc(29, 12, 'N', 95); dputcharc(30, 12, 'b', 95);\n"
+    "dputcharc(29, 13, 'T', 95); dputcharc(30, 13, 'a', 95);\n"
+    "dputcharc(29, 14, 'D', 95); dputcharc(30, 14, 'b', 95);\n" // end g6
+    "dputcharc(31, 11, 'C', 95); dputcharc(32, 11, 'r', 95);\n"
+    "dputcharc(31, 12, 'M', 95); dputcharc(32, 12, 'o', 95);\n"
+    "dputcharc(31, 13, 'W', 95); dputcharc(32, 13, ' ', 95);\n"
+    "dputcharc(31, 14, 'S', 95); dputcharc(32, 14, 'g', 95);\n" // end g7
+    "dputcharc(33, 11, 'M', 95); dputcharc(34, 11, 'n', 95);\n"
+    "dputcharc(33, 12, 'T', 95); dputcharc(34, 12, 'c', 95);\n"
+    "dputcharc(33, 13, 'R', 95); dputcharc(34, 13, 'e', 95);\n"
+    "dputcharc(33, 14, 'B', 95); dputcharc(34, 14, 'h', 95);\n" // end g8
+    "dputcharc(35, 11, 'F', 95); dputcharc(36, 11, 'e', 95);\n"
+    "dputcharc(35, 12, 'R', 95); dputcharc(36, 12, 'u', 95);\n"
+    "dputcharc(35, 13, 'O', 95); dputcharc(36, 13, 's', 95);\n"
+    "dputcharc(35, 14, 'H', 95); dputcharc(36, 14, 's', 95);\n" // end g9
+    "dputcharc(37, 11, 'C', 95); dputcharc(38, 11, 'o', 95);\n"
+    "dputcharc(37, 12, 'R', 95); dputcharc(38, 12, 'h', 95);\n"
+    "dputcharc(37, 13, 'I', 95); dputcharc(38, 13, 'r', 95);\n"
+    "dputcharc(37, 14, 'M', 143); dputcharc(38, 14, 't', 143);\n" // end g10
+    "dputcharc(39, 11, 'N', 95); dputcharc(40, 11, 'i', 95);\n"
+    "dputcharc(39, 12, 'P', 95); dputcharc(40, 12, 'd', 95);\n"
+    "dputcharc(39, 13, 'P', 95); dputcharc(40, 13, 't', 95);\n"
+    "dputcharc(39, 14, 'D', 143); dputcharc(40, 14, 's', 143);\n" // end g11
+    "dputcharc(41, 11, 'C', 95); dputcharc(42, 11, 'u', 95);\n"
+    "dputcharc(41, 12, 'A', 95); dputcharc(42, 12, 'g', 95);\n"
+    "dputcharc(41, 13, 'A', 95); dputcharc(42, 13, 'u', 95);\n"
+    "dputcharc(41, 14, 'R', 143); dputcharc(42, 14, 'g', 143);\n" // end g12
+    "dputcharc(43, 11, 'Z', 95); dputcharc(44, 11, 'n', 95);\n"
+    "dputcharc(43, 12, 'C', 95); dputcharc(44, 12, 'd', 95);\n"
+    "dputcharc(43, 13, 'H', 95); dputcharc(44, 13, 'g', 95);\n"
+    "dputcharc(43, 14, 'C',143); dputcharc(44, 14, 'n', 143);\n" // end g13
+    "dputcharc(45, 9, 'B', 224); dputcharc(46, 9, ' ', 224);\n"
+    "dputcharc(45, 10, 'A', 160); dputcharc(46, 10, 'l', 160);\n"
+    "dputcharc(45, 11, 'G', 160); dputcharc(46, 11, 'a', 160);\n"
+    "dputcharc(45, 12, 'I', 160); dputcharc(46, 12, 'n', 160);\n"
+    "dputcharc(45, 13, 'T', 160); dputcharc(46, 13, 'i', 160);\n"
+    "dputcharc(45, 14, 'N', 143); dputcharc(46, 14, 'h', 143);\n" // end g14
+    "dputcharc(47, 9, 'C', 31); dputcharc(48, 9, ' ', 31);\n"
+    "dputcharc(47, 10, 'S', 224); dputcharc(48, 10, 'i', 224);\n"
+    "dputcharc(47, 11, 'G', 224); dputcharc(48, 11, 'e', 224);\n"
+    "dputcharc(47, 12, 'S', 160); dputcharc(48, 12, 'n', 160);\n"
+    "dputcharc(47, 13, 'P', 160); dputcharc(48, 13, 'b', 160);\n"
+    "dputcharc(47, 14, 'F', 143); dputcharc(48, 14, 'l', 143);\n" // end g15
+    "dputcharc(49, 9, 'N', 31); dputcharc(50, 9, ' ', 31);\n"
+    "dputcharc(49, 10, 'P', 31); dputcharc(50, 10, ' ', 31);\n"
+    "dputcharc(49, 11, 'A', 224); dputcharc(50, 11, 's', 224);\n"
+    "dputcharc(49, 12, 'S', 224); dputcharc(50, 12, 'b', 224);\n"
+    "dputcharc(49, 13, 'B', 160); dputcharc(50, 13, 'i', 160);\n"
+    "dputcharc(49, 14, 'M', 143); dputcharc(50, 14, 'c', 143);\n" // end g16
+    "dputcharc(51, 9, 'O', 31); dputcharc(52, 9, ' ', 31);\n"
+    "dputcharc(51, 10, 'S', 31); dputcharc(52, 10, ' ', 31);\n"
+    "dputcharc(51, 11, 'S', 31); dputcharc(52, 11, 'e', 31);\n"
+    "dputcharc(51, 12, 'T', 224); dputcharc(52, 12, 'e', 224);\n"
+    "dputcharc(51, 13, 'P', 160); dputcharc(52, 13, 'o', 160);\n"
+    "dputcharc(51, 14, 'L', 143); dputcharc(52, 14, 'v', 143);\n" // end g17
+    "dputcharc(53, 9, 'F', 31); dputcharc(54, 9, ' ', 31);\n"
+    "dputcharc(53, 10, 'C', 31); dputcharc(54, 10, 'l', 31);\n"
+    "dputcharc(53, 11, 'B', 31); dputcharc(54, 11, 'r', 31);\n"
+    "dputcharc(53, 12, 'I', 31); dputcharc(54, 12, ' ', 31);\n"
+    "dputcharc(53, 13, 'A', 160); dputcharc(54, 13, 't', 160);\n"
+    "dputcharc(53, 14, 'T', 143); dputcharc(54, 14, 's', 143);\n" // eng g18
+    "dputcharc(55, 8, 'H', 79); dputcharc(56, 8, 'e', 79);\n"
+    "dputcharc(55, 9, 'N', 79); dputcharc(56, 9, 'e', 79);\n"
+    "dputcharc(55, 10, 'A', 79); dputcharc(56, 10, 'r', 79);\n"
+    "dputcharc(55, 11, 'K', 79); dputcharc(56, 11, 'r', 79);\n"
+    "dputcharc(55, 12, 'X', 79); dputcharc(56, 12, 'e', 79);\n"
+    "dputcharc(55, 13, 'R', 79); dputcharc(56, 13, 'n', 79);\n"
+    "dputcharc(55, 14, 'O', 143); dputcharc(56, 14, 'g', 143);\n" // end 619
+    "dputcharc(27, 16, 'C', 177); dputcharc(28, 16, 'e', 177);\n" 
+    "dputcharc(29, 16, 'P', 177); dputcharc(30, 16, 'r', 177);\n" 
+    "dputcharc(31, 16, 'N', 177); dputcharc(32, 16, 'd', 177);\n" 
+    "dputcharc(33, 16, 'P', 177); dputcharc(34, 16, 'm', 177);\n" 
+    "dputcharc(35, 16, 'S', 177); dputcharc(36, 16, 'm', 177);\n" 
+    "dputcharc(37, 16, 'E', 177); dputcharc(38, 16, 'u', 177);\n" 
+    "dputcharc(39, 16, 'G', 177); dputcharc(40, 16, 'd', 177);\n" 
+    "dputcharc(41, 16, 'T', 177); dputcharc(42, 16, 'b', 177);\n"
+    "dputcharc(43, 16, 'D', 177); dputcharc(44, 16, 'y', 177);\n"  
+    "dputcharc(45, 16, 'H', 177); dputcharc(46, 16, 'o', 177);\n" 
+    "dputcharc(47, 16, 'E', 177); dputcharc(48, 16, 'r', 177);\n" 
+    "dputcharc(49, 16, 'T', 177); dputcharc(50, 16, 'm', 177);\n" 
+    "dputcharc(51, 16, 'Y', 177); dputcharc(52, 16, 'b', 177);\n" 
+    "dputcharc(53, 16, 'L', 177); dputcharc(54, 16, 'u', 177);\n" // end actinds
     "}";
-    
+
 static int str_len(const char* str) {
     int len = 0;
     while (str[len]) len++;
@@ -611,7 +715,7 @@ static void vfs_seed_defaults() {
     }
     if (!vfs_read_file("0:\\vgag\\periodic.c", read_buffer) || !streq(read_buffer, user_demo)) {
         vfs_make_dir("0:\\vgag");
-        vfs_write_file("0:\\vgag\\periodic.c", user_demo);
+        vfs_write_file("0:\\vgag\\periodic.c", user_demo2);
     }
 }
 

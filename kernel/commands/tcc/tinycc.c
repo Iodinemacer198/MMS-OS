@@ -23,6 +23,17 @@ extern int dcY;
 
 extern void dprintc(const char* str, uint8_t color);
 
+void* memcpy(void* dest, const void* src, unsigned int n) {
+    unsigned char* d = (unsigned char*)dest;
+    const unsigned char* s = (const unsigned char*)src;
+
+    for (unsigned int i = 0; i < n; i++) {
+        d[i] = s[i];
+    }
+
+    return dest;
+}
+
 void tcc_dputcharc(int dcX, int dcY, unsigned char c, uint8_t color) {
     if (c == '\n')
     {
@@ -48,6 +59,10 @@ void tcc_dputcharc(int dcX, int dcY, unsigned char c, uint8_t color) {
     }
 }
 
+void tcc_dprintc(char* str, int dcX, int dcY, uint8_t color) {
+    for (int i = 0; str[i] != 0; i++)
+        tcc_dputcharc(dcX, dcY, str[i], color);
+}
 
 void test() {
     println("sup");
@@ -133,14 +148,14 @@ void printtimeindex() {
 }
 
 #define TCC_INPUT_MAX 64
-#define TCC_SOURCE_MAX 512
-#define TCC_OUTPUT_MAX 512
+#define TCC_SOURCE_MAX 16384
+#define TCC_OUTPUT_MAX 16384
 #define TCC_VAR_MAX 16
 #define TCC_STACK_MAX 64
-#define TCC_CODE_MAX 96
+#define TCC_CODE_MAX 2048
 #define TCC_NAME_MAX 16
 #define TCC_ERROR_MAX 96
-#define TCC_LINE_MAX 128
+#define TCC_LINE_MAX 256
 
 typedef enum {
     OP_CONST,
@@ -176,7 +191,7 @@ typedef enum {
     BUILTIN_PUTCHARC = 9,
     BUILTIN_DPUTCHARC = 10,
     BUILTIN_VGAGB = 11,
-    BUILTIN_VB = 12,
+    BUILTIN_VB = 12
 } TinyBuiltinId;
 
 typedef struct {
@@ -216,7 +231,7 @@ static const TinyBuiltin tiny_builtins[] = {
     {"putcharc", BUILTIN_PUTCHARC, 2, false},
     {"dputcharc", BUILTIN_DPUTCHARC, 4, false},
     {"vgag_blue", BUILTIN_VGAGB, 0, false},
-    {"vgag_box", BUILTIN_VB, 0, false},
+    {"vgag_box", BUILTIN_VB, 0, false}
 };
 
 static bool tiny_streq(const char* a, const char* b) {
