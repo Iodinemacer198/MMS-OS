@@ -25,20 +25,20 @@ extern int cursorX;
 
 /* FAT16 layout starting at LBA 1 on the raw drive. */
 #define FS_BASE_LBA 1
-#define FS_TOTAL_SECTORS 20480 /* 10 MiB raw disk from run.sh */
+#define FS_TOTAL_SECTORS 2097152 /* 1 GiB raw disk from run.sh */
 #define FS_RESERVED_SECTORS 1
 #define FS_NUM_FATS 2
-#define FS_ROOT_ENTRIES 128
+#define FS_ROOT_ENTRIES 512
 #define FS_ROOT_DIR_SECTORS ((FS_ROOT_ENTRIES * 32 + (SECTOR_SIZE - 1)) / SECTOR_SIZE)
-#define FS_SECTORS_PER_FAT 80
-#define FS_SECTORS_PER_CLUSTER 1
+#define FS_SECTORS_PER_FAT 256
+#define FS_SECTORS_PER_CLUSTER 32
 
 #define FAT16_EOC 0xFFFF
 #define FAT16_FREE 0x0000
 
 #define DATA_START_LBA (FS_BASE_LBA + FS_RESERVED_SECTORS + (FS_NUM_FATS * FS_SECTORS_PER_FAT) + FS_ROOT_DIR_SECTORS)
 #define ROOT_DIR_LBA (FS_BASE_LBA + FS_RESERVED_SECTORS + (FS_NUM_FATS * FS_SECTORS_PER_FAT))
-#define TOTAL_CLUSTERS (FS_TOTAL_SECTORS - FS_RESERVED_SECTORS - (FS_NUM_FATS * FS_SECTORS_PER_FAT) - FS_ROOT_DIR_SECTORS)
+#define TOTAL_CLUSTERS ((FS_TOTAL_SECTORS - FS_RESERVED_SECTORS - (FS_NUM_FATS * FS_SECTORS_PER_FAT) - FS_ROOT_DIR_SECTORS) / FS_SECTORS_PER_CLUSTER)
 #define FAT_ENTRY_COUNT (TOTAL_CLUSTERS + 2)
 
 #define ATTR_DIRECTORY 0x10
@@ -48,7 +48,7 @@ extern int cursorX;
 
 #define MAX_PATH_PARTS 16
 #define MAX_PATH_LEN 64
-#define FILE_BUFFER_LIMIT (SECTOR_SIZE * 8)
+#define FILE_BUFFER_LIMIT (SECTOR_SIZE * FS_SECTORS_PER_CLUSTER * 32)
 
 typedef struct __attribute__((packed)) {
     uint8_t jump[3];
@@ -105,6 +105,13 @@ static const char* default_demo_source =
     "return answer;\n"
     "}";
 
+static const char* user_demo2 = 
+    "void main() {\n"
+    "vgag_box();\n"
+    "dprintc(\"H \", 21, 8, 31);\n"
+    "}";
+
+/*
 static const char* user_demo2 = 
     "void main() {\n"
     "vgag_box();\n"
@@ -213,6 +220,7 @@ static const char* user_demo2 =
     "dputcharc(51, 16, 'Y', 177); dputcharc(52, 16, 'b', 177);\n" 
     "dputcharc(53, 16, 'L', 177); dputcharc(54, 16, 'u', 177);\n" // end actinds
     "}";
+*/
 
 static int str_len(const char* str) {
     int len = 0;
@@ -433,8 +441,9 @@ static bool read_dir_entry(uint16_t dir_cluster, int index, FatDirEntry* out) {
     max_entries = (SECTOR_SIZE * FS_SECTORS_PER_CLUSTER) / 32;
     if (index < 0 || index >= max_entries) return false;
 
-    read_sector(cluster_to_lba(dir_cluster), sector_buffer);
-    int off = index * 32;
+    int sec = index / 16;
+    int off = (index % 16) * 32;
+    read_sector(cluster_to_lba(dir_cluster) + sec, sector_buffer);
     for (int i = 0; i < 32; i++) ((uint8_t*)out)[i] = sector_buffer[off + i];
     return true;
 }
@@ -459,10 +468,11 @@ static bool write_dir_entry(uint16_t dir_cluster, int index, const FatDirEntry* 
     max_entries = (SECTOR_SIZE * FS_SECTORS_PER_CLUSTER) / 32;
     if (index < 0 || index >= max_entries) return false;
 
-    read_sector(cluster_to_lba(dir_cluster), sector_buffer);
-    int off = index * 32;
+    int sec = index / 16;
+    int off = (index % 16) * 32;
+    read_sector(cluster_to_lba(dir_cluster) + sec, sector_buffer);
     for (int i = 0; i < 32; i++) sector_buffer[off + i] = ((const uint8_t*)in)[i];
-    ata_write_sector(cluster_to_lba(dir_cluster), sector_buffer);
+    ata_write_sector(cluster_to_lba(dir_cluster) + sec, sector_buffer);
     return true;
 }
 
@@ -502,7 +512,10 @@ static uint16_t fat_alloc_cluster() {
         if (fat[c] == FAT16_FREE) {
             fat[c] = FAT16_EOC;
             mem_zero(sector_buffer, SECTOR_SIZE);
-            ata_write_sector(cluster_to_lba(c), sector_buffer);
+            uint32_t lba = cluster_to_lba(c);
+            for (int sec = 0; sec < FS_SECTORS_PER_CLUSTER; sec++) {
+                ata_write_sector(lba + sec, sector_buffer);
+            }
             return c;
         }
     }
@@ -614,10 +627,13 @@ static bool write_chain_data(uint16_t first_cluster, const char* data, int size)
     int offset = 0;
 
     while (cur >= 2 && cur < FAT_ENTRY_COUNT) {
-        for (int i = 0; i < SECTOR_SIZE; i++) {
-            sector_buffer[i] = (offset < size) ? (uint8_t)data[offset++] : 0;
+        uint32_t cluster_lba = cluster_to_lba(cur);
+        for (int sec = 0; sec < FS_SECTORS_PER_CLUSTER; sec++) {
+            for (int i = 0; i < SECTOR_SIZE; i++) {
+                sector_buffer[i] = (offset < size) ? (uint8_t)data[offset++] : 0;
+            }
+            ata_write_sector(cluster_lba + sec, sector_buffer);
         }
-        ata_write_sector(cluster_to_lba(cur), sector_buffer);
 
         if (fat[cur] == FAT16_EOC) break;
         cur = fat[cur];
@@ -631,8 +647,11 @@ static bool read_chain_data(uint16_t first_cluster, char* out, int size) {
     int offset = 0;
 
     while (cur >= 2 && cur < FAT_ENTRY_COUNT && offset < size) {
-        ata_read_sector(cluster_to_lba(cur), sector_buffer);
-        for (int i = 0; i < SECTOR_SIZE && offset < size; i++) out[offset++] = (char)sector_buffer[i];
+        uint32_t cluster_lba = cluster_to_lba(cur);
+        for (int sec = 0; sec < FS_SECTORS_PER_CLUSTER && offset < size; sec++) {
+            ata_read_sector(cluster_lba + sec, sector_buffer);
+            for (int i = 0; i < SECTOR_SIZE && offset < size; i++) out[offset++] = (char)sector_buffer[i];
+        }
 
         if (fat[cur] == FAT16_EOC) break;
         cur = fat[cur];
@@ -669,13 +688,13 @@ static void fs_format_fat16() {
     bs.reserved_sector_count = FS_RESERVED_SECTORS;
     bs.num_fats = FS_NUM_FATS;
     bs.root_entry_count = FS_ROOT_ENTRIES;
-    bs.total_sectors_16 = FS_TOTAL_SECTORS;
+    bs.total_sectors_16 = 0;
     bs.media = 0xF8;
     bs.fat_size_16 = FS_SECTORS_PER_FAT;
     bs.sectors_per_track = 63;
     bs.num_heads = 16;
     bs.hidden_sectors = 0;
-    bs.total_sectors_32 = 0;
+    bs.total_sectors_32 = FS_TOTAL_SECTORS;
     bs.drive_number = 0x80;
     bs.boot_signature = 0x29;
     bs.volume_id = 0x4D4D5301;
@@ -698,7 +717,7 @@ static void fs_format_fat16() {
 }
 
 static void vfs_seed_defaults() {
-    char read_buffer[FILE_BUFFER_LIMIT + 1];
+    static char read_buffer[FILE_BUFFER_LIMIT + 1];
 
     vfs_make_dir("0:\\data");
 
@@ -713,7 +732,7 @@ static void vfs_seed_defaults() {
         vfs_make_dir("0:\\programs");
         vfs_write_file("0:\\programs\\demo.c", default_demo_source);
     }
-    if (!vfs_read_file("0:\\vgag\\periodic.c", read_buffer) || !streq(read_buffer, user_demo)) {
+    if (!vfs_read_file("0:\\vgag\\periodic.c", read_buffer) || !streq(read_buffer, user_demo2)) {
         vfs_make_dir("0:\\vgag");
         vfs_write_file("0:\\vgag\\periodic.c", user_demo2);
     }
@@ -729,7 +748,7 @@ void vfs_init() {
                  (bs->num_fats == FS_NUM_FATS) &&
                  (bs->fat_size_16 == FS_SECTORS_PER_FAT) &&
                  (bs->root_entry_count == FS_ROOT_ENTRIES) &&
-                 (bs->total_sectors_16 == FS_TOTAL_SECTORS);
+                 (bs->total_sectors_32 == FS_TOTAL_SECTORS);
 
     if (!valid) {
         println("Formatting drive...");
@@ -791,7 +810,12 @@ bool vfs_make_dir(const char* path) {
     items[1].attr = ATTR_DIRECTORY;
     dir_entry_set_cluster(&items[1], parent == ROOT_CLUSTER ? 0 : parent);
 
-    ata_write_sector(cluster_to_lba(new_cluster), sector_buffer);
+    uint32_t dir_lba = cluster_to_lba(new_cluster);
+    ata_write_sector(dir_lba, sector_buffer);
+    mem_zero(sector_buffer, SECTOR_SIZE);
+    for (int sec = 1; sec < FS_SECTORS_PER_CLUSTER; sec++) {
+        ata_write_sector(dir_lba + sec, sector_buffer);
+    }
     fat_flush();
 
     return true;
@@ -863,7 +887,8 @@ bool vfs_write_file(const char* path, const char* data) {
 
     uint16_t first = FAT16_FREE;
     if (len > 0) {
-        int clusters = (len + SECTOR_SIZE - 1) / SECTOR_SIZE;
+        int cluster_bytes = SECTOR_SIZE * FS_SECTORS_PER_CLUSTER;
+        int clusters = (len + cluster_bytes - 1) / cluster_bytes;
         first = fat_alloc_chain(clusters);
         if (first == FAT16_FREE) return false;
         write_chain_data(first, data, len);

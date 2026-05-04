@@ -148,8 +148,8 @@ void printtimeindex() {
 }
 
 #define TCC_INPUT_MAX 64
-#define TCC_SOURCE_MAX 16384
-#define TCC_OUTPUT_MAX 16384
+#define TCC_SOURCE_MAX 65536
+#define TCC_OUTPUT_MAX 131072
 #define TCC_VAR_MAX 16
 #define TCC_STACK_MAX 64
 #define TCC_CODE_MAX 2048
@@ -191,7 +191,8 @@ typedef enum {
     BUILTIN_PUTCHARC = 9,
     BUILTIN_DPUTCHARC = 10,
     BUILTIN_VGAGB = 11,
-    BUILTIN_VB = 12
+    BUILTIN_VB = 12,
+    BUILTIN_DPRINTC = 13
 } TinyBuiltinId;
 
 typedef struct {
@@ -231,7 +232,8 @@ static const TinyBuiltin tiny_builtins[] = {
     {"putcharc", BUILTIN_PUTCHARC, 2, false},
     {"dputcharc", BUILTIN_DPUTCHARC, 4, false},
     {"vgag_blue", BUILTIN_VGAGB, 0, false},
-    {"vgag_box", BUILTIN_VB, 0, false}
+    {"vgag_box", BUILTIN_VB, 0, false},
+    {"dprintc", BUILTIN_DPRINTC, 4, true}
 };
 
 static bool tiny_streq(const char* a, const char* b) {
@@ -1036,6 +1038,20 @@ static bool tiny_vm_call(int builtin_id, int* stack, int* sp, const char* text, 
         tcc_dputcharc((int)dx, (int)dy, (unsigned char)value, (uint8_t)color);
         return true;
     }
+    if (builtin_id == BUILTIN_DPRINTC) {
+        int color;
+        int dy;
+        int dx;
+        if (*sp < 4) {
+            *runtime_error = 1;
+            return false;
+        }
+        color = stack[--(*sp)];
+        dy = stack[--(*sp)];
+        dx = stack[--(*sp)];
+        tcc_dprintc((char*)text, (int)dx, (int)dy, (uint8_t)color);
+        return true;
+    }
     if (builtin_id == BUILTIN_SLEEP) {
         extern void sleep(uint32_t count);
         if (*sp < 1) {
@@ -1292,9 +1308,9 @@ static void tiny_make_output_path(const char* src_path, char* out_path) {
 
 void run_tcc_build(char* src_path) {
     char out_path[TCC_INPUT_MAX] = "";
-    char source[TCC_SOURCE_MAX];
-    char program[TCC_OUTPUT_MAX];
-    char error[TCC_ERROR_MAX];
+    static char source[TCC_SOURCE_MAX];
+    static char program[TCC_OUTPUT_MAX];
+    static char error[TCC_ERROR_MAX];
 
     if (!vfs_read_file(src_path, source)) {
         print("Error: ");
@@ -1324,9 +1340,9 @@ void run_tcc_build(char* src_path) {
 
 void discrete_run_tcc_build(char* src_path) {
     char out_path[TCC_INPUT_MAX] = "";
-    char source[TCC_SOURCE_MAX];
-    char program[TCC_OUTPUT_MAX];
-    char error[TCC_ERROR_MAX];
+    static char source[TCC_SOURCE_MAX];
+    static char program[TCC_OUTPUT_MAX];
+    static char error[TCC_ERROR_MAX];
 
     if (!vfs_read_file(src_path, source)) {
         dcX = 0; dcY = 23;
@@ -1353,7 +1369,7 @@ void discrete_run_tcc_build(char* src_path) {
 }
 
 void run_tcc_exec(char* program_path) {
-    char program[TCC_OUTPUT_MAX];
+    static char program[TCC_OUTPUT_MAX];
     int exit_code = 0;
 
     if (!vfs_read_file(program_path, program)) {

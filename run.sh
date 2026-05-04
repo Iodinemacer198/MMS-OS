@@ -2,11 +2,13 @@
 set -e
 
 FILE="disk.img"
+TARGET_SIZE="1G"
 
 if [ -f "$FILE" ]; then
+    qemu-img resize -f raw "$FILE" "$TARGET_SIZE" >/dev/null
     qemu-system-x86_64 -cdrom iso/output/mms-os.iso -drive format=raw,file=disk.img -audiodev pa,id=speaker -machine pcspk-audiodev=speaker
 else
-    qemu-img create -f raw disk.img 10M
+    qemu-img create -f raw disk.img "$TARGET_SIZE"
     echo "Created filesystem image"
     qemu-system-x86_64 -cdrom iso/output/mms-os.iso -drive format=raw,file=disk.img -audiodev pa,id=speaker -machine pcspk-audiodev=speaker
 fi
