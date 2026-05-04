@@ -704,7 +704,7 @@ static void fs_format_fat16() {
 }
 
 static void vfs_seed_defaults() {
-    char read_buffer[FILE_BUFFER_LIMIT + 1];
+    static char read_buffer[FILE_BUFFER_LIMIT + 1];
 
     vfs_make_dir("0:\\data");
 
