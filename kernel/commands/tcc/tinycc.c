@@ -148,8 +148,8 @@ void printtimeindex() {
 }
 
 #define TCC_INPUT_MAX 64
-#define TCC_SOURCE_MAX 16384
-#define TCC_OUTPUT_MAX 16384
+#define TCC_SOURCE_MAX 65536
+#define TCC_OUTPUT_MAX 131072
 #define TCC_VAR_MAX 16
 #define TCC_STACK_MAX 64
 #define TCC_CODE_MAX 2048
@@ -1292,9 +1292,9 @@ static void tiny_make_output_path(const char* src_path, char* out_path) {
 
 void run_tcc_build(char* src_path) {
     char out_path[TCC_INPUT_MAX] = "";
-    char source[TCC_SOURCE_MAX];
-    char program[TCC_OUTPUT_MAX];
-    char error[TCC_ERROR_MAX];
+    static char source[TCC_SOURCE_MAX];
+    static char program[TCC_OUTPUT_MAX];
+    static char error[TCC_ERROR_MAX];
 
     if (!vfs_read_file(src_path, source)) {
         print("Error: ");
@@ -1324,9 +1324,9 @@ void run_tcc_build(char* src_path) {
 
 void discrete_run_tcc_build(char* src_path) {
     char out_path[TCC_INPUT_MAX] = "";
-    char source[TCC_SOURCE_MAX];
-    char program[TCC_OUTPUT_MAX];
-    char error[TCC_ERROR_MAX];
+    static char source[TCC_SOURCE_MAX];
+    static char program[TCC_OUTPUT_MAX];
+    static char error[TCC_ERROR_MAX];
 
     if (!vfs_read_file(src_path, source)) {
         dcX = 0; dcY = 23;
@@ -1353,7 +1353,7 @@ void discrete_run_tcc_build(char* src_path) {
 }
 
 void run_tcc_exec(char* program_path) {
-    char program[TCC_OUTPUT_MAX];
+    static char program[TCC_OUTPUT_MAX];
     int exit_code = 0;
 
     if (!vfs_read_file(program_path, program)) {
