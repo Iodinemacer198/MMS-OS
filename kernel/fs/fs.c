@@ -108,6 +108,13 @@ static const char* default_demo_source =
 static const char* user_demo2 = 
     "void main() {\n"
     "vgag_box();\n"
+    "dprintc(\"H \", 21, 8, 31);\n"
+    "}";
+
+/*
+static const char* user_demo2 = 
+    "void main() {\n"
+    "vgag_box();\n"
     "dputcharc(21, 8, 'H', 31); dputcharc(22, 8, ' ', 31);\n"
     "dputcharc(21, 9, 'L', 159); dputcharc(22, 9, 'i', 159);\n"
     "dputcharc(21, 10, 'N', 159); dputcharc(22, 10, 'a', 159);\n"
@@ -213,6 +220,7 @@ static const char* user_demo2 =
     "dputcharc(51, 16, 'Y', 177); dputcharc(52, 16, 'b', 177);\n" 
     "dputcharc(53, 16, 'L', 177); dputcharc(54, 16, 'u', 177);\n" // end actinds
     "}";
+*/
 
 static int str_len(const char* str) {
     int len = 0;

@@ -191,7 +191,8 @@ typedef enum {
     BUILTIN_PUTCHARC = 9,
     BUILTIN_DPUTCHARC = 10,
     BUILTIN_VGAGB = 11,
-    BUILTIN_VB = 12
+    BUILTIN_VB = 12,
+    BUILTIN_DPRINTC = 13
 } TinyBuiltinId;
 
 typedef struct {
@@ -231,7 +232,8 @@ static const TinyBuiltin tiny_builtins[] = {
     {"putcharc", BUILTIN_PUTCHARC, 2, false},
     {"dputcharc", BUILTIN_DPUTCHARC, 4, false},
     {"vgag_blue", BUILTIN_VGAGB, 0, false},
-    {"vgag_box", BUILTIN_VB, 0, false}
+    {"vgag_box", BUILTIN_VB, 0, false},
+    {"dprintc", BUILTIN_DPRINTC, 4, true}
 };
 
 static bool tiny_streq(const char* a, const char* b) {
@@ -1034,6 +1036,20 @@ static bool tiny_vm_call(int builtin_id, int* stack, int* sp, const char* text, 
         dy = stack[--(*sp)];
         dx = stack[--(*sp)];
         tcc_dputcharc((int)dx, (int)dy, (unsigned char)value, (uint8_t)color);
+        return true;
+    }
+    if (builtin_id == BUILTIN_DPRINTC) {
+        int color;
+        int dy;
+        int dx;
+        if (*sp < 4) {
+            *runtime_error = 1;
+            return false;
+        }
+        color = stack[--(*sp)];
+        dy = stack[--(*sp)];
+        dx = stack[--(*sp)];
+        tcc_dprintc((char*)text, (int)dx, (int)dy, (uint8_t)color);
         return true;
     }
     if (builtin_id == BUILTIN_SLEEP) {
