@@ -233,7 +233,7 @@ static const TinyBuiltin tiny_builtins[] = {
     {"dputcharc", BUILTIN_DPUTCHARC, 4, false},
     {"vgag_blue", BUILTIN_VGAGB, 0, false},
     {"vgag_box", BUILTIN_VB, 0, false},
-    {"dprintc", BUILTIN_DPRINTC, 4, true}
+    {"dprintc", BUILTIN_DPRINTC, 3, true}
 };
 
 static bool tiny_streq(const char* a, const char* b) {
@@ -612,9 +612,19 @@ static bool tiny_parse_call_stmt(TinyParser* parser, const char* name) {
 
     if (builtin->accepts_string) {
         if (!tiny_parse_string(parser, string_arg, 64)) return false;
+        if (builtin->int_arg_count > 0) {
+            if (!tiny_expect_char(parser, ',')) return false;
+            for (int i = 0; i < builtin->int_arg_count; i++) {
+                if (!tiny_parse_expr(parser)) return false;
+                arg_count++;
+                if (i + 1 < builtin->int_arg_count) {
+                    if (!tiny_expect_char(parser, ',')) return false;
+                }
+            }
+        }
         if (!tiny_expect_char(parser, ')')) return false;
         if (!tiny_expect_char(parser, ';')) return false;
-        return tiny_emit(parser, OP_CALLSTR, builtin->id, 0, string_arg);
+        return tiny_emit(parser, OP_CALLSTR, builtin->id, arg_count, string_arg);
     }
 
     if (builtin->int_arg_count > 0) {
@@ -915,7 +925,7 @@ static bool tiny_serialize_program(const TinyInstruction* code, int code_count, 
                 if (!tiny_append_str(out, &len, "CALL ") || !tiny_append_int(out, &len, code[i].a) || !tiny_append_char(out, &len, ' ') || !tiny_append_int(out, &len, code[i].b)) goto overflow;
                 break;
             case OP_CALLSTR:
-                if (!tiny_append_str(out, &len, "CALLSTR ") || !tiny_append_int(out, &len, code[i].a) || !tiny_append_char(out, &len, ' ') || !tiny_append_escaped(out, &len, code[i].text)) goto overflow;
+                if (!tiny_append_str(out, &len, "CALLSTR ") || !tiny_append_int(out, &len, code[i].a) || !tiny_append_char(out, &len, ' ') || !tiny_append_int(out, &len, code[i].b) || !tiny_append_char(out, &len, ' ') || !tiny_append_escaped(out, &len, code[i].text)) goto overflow;
                 break;
             case OP_RET:
                 if (!tiny_append_str(out, &len, "RET")) goto overflow;
@@ -1042,7 +1052,7 @@ static bool tiny_vm_call(int builtin_id, int* stack, int* sp, const char* text, 
         int color;
         int dy;
         int dx;
-        if (*sp < 4) {
+        if (*sp < 3) {
             *runtime_error = 1;
             return false;
         }
@@ -1226,9 +1236,13 @@ static bool tiny_execute_program(const char* program, int* exit_code) {
             int pos = 8;
             char text[64];
             int builtin_id = tiny_parse_int_at(line, &pos);
+            int arg_count = 0;
+            if (line[pos] == ' ') pos++;
+            arg_count = tiny_parse_int_at(line, &pos);
             if (line[pos] == ' ') pos++;
             tiny_unescape_into(text, &line[pos]);
-            if (!tiny_vm_call(builtin_id, stack, &sp, text, &runtime_error)) {
+            if (sp < arg_count) runtime_error = 1;
+            else if (!tiny_vm_call(builtin_id, stack, &sp, text, &runtime_error)) {
             }
         }
         else if (tiny_streq(line, "RET")) {
