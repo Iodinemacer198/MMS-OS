@@ -896,6 +896,10 @@ void vgag_intro() {
     dprintc("F3", 0x70);
 }
 
+void vgag_about() {
+    
+}
+
 void old_vgag_f1() {
     /*
     dcX = 3; dcY = 2;
