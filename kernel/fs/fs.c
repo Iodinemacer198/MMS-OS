@@ -25,12 +25,12 @@ extern int cursorX;
 
 /* FAT16 layout starting at LBA 1 on the raw drive. */
 #define FS_BASE_LBA 1
-#define FS_TOTAL_SECTORS 20480 /* 10 MiB raw disk from run.sh */
+#define FS_TOTAL_SECTORS 204800 /* 100 MiB raw disk */
 #define FS_RESERVED_SECTORS 1
 #define FS_NUM_FATS 2
 #define FS_ROOT_ENTRIES 128
 #define FS_ROOT_DIR_SECTORS ((FS_ROOT_ENTRIES * 32 + (SECTOR_SIZE - 1)) / SECTOR_SIZE)
-#define FS_SECTORS_PER_FAT 80
+#define FS_SECTORS_PER_FAT 794
 #define FS_SECTORS_PER_CLUSTER 1
 
 #define FAT16_EOC 0xFFFF
@@ -670,13 +670,18 @@ static void fs_format_fat16() {
     bs.reserved_sector_count = FS_RESERVED_SECTORS;
     bs.num_fats = FS_NUM_FATS;
     bs.root_entry_count = FS_ROOT_ENTRIES;
-    bs.total_sectors_16 = FS_TOTAL_SECTORS;
+    if (FS_TOTAL_SECTORS <= 0xFFFF) {
+        bs.total_sectors_16 = (uint16_t)FS_TOTAL_SECTORS;
+        bs.total_sectors_32 = 0;
+    } else {
+        bs.total_sectors_16 = 0;
+        bs.total_sectors_32 = FS_TOTAL_SECTORS;
+    }
     bs.media = 0xF8;
     bs.fat_size_16 = FS_SECTORS_PER_FAT;
     bs.sectors_per_track = 63;
     bs.num_heads = 16;
     bs.hidden_sectors = 0;
-    bs.total_sectors_32 = 0;
     bs.drive_number = 0x80;
     bs.boot_signature = 0x29;
     bs.volume_id = 0x4D4D5301;
@@ -730,7 +735,8 @@ void vfs_init() {
                  (bs->num_fats == FS_NUM_FATS) &&
                  (bs->fat_size_16 == FS_SECTORS_PER_FAT) &&
                  (bs->root_entry_count == FS_ROOT_ENTRIES) &&
-                 (bs->total_sectors_16 == FS_TOTAL_SECTORS);
+                 (((FS_TOTAL_SECTORS <= 0xFFFF) && (bs->total_sectors_16 == FS_TOTAL_SECTORS) && (bs->total_sectors_32 == 0)) ||
+                  ((FS_TOTAL_SECTORS > 0xFFFF) && (bs->total_sectors_16 == 0) && (bs->total_sectors_32 == FS_TOTAL_SECTORS)));
 
     if (!valid) {
         println("Formatting drive...");
