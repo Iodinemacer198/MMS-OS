@@ -1,8 +1,10 @@
 ## Deprecated file
 run.txt
 
-## User-specific file system image
+## User-specific file system image (deprecated name)
 disk.img
+## working name
+fs.img
 
 ## Build outputs
 iso/build/

@@ -6,5 +6,6 @@
 
 void vgag_run();
 void ind_login();
+void vgag_about();
 
 #endif

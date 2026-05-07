@@ -512,7 +512,9 @@ void print_time() {
 
     print("Current Time: ");
     printint(hour);   putchar(':');
+    if (minute < 10) printint(0);
     printint(minute); putchar(':');
+    if (second < 10) printint(0);
     printint(second); print(" UTC");
     print("  Date: ");
     printint(day);    putchar('/');
@@ -533,7 +535,7 @@ void run_command() {
         println("help : This page!                     |  about : OS information");
         println("calc : Simple calculator              |  clear : Clears the screen");
         println("time : Display current time and date  |  wordle : Plays a game of Wordle");
-        println("music : Plays a test music file       |  ");
+        println("music : Plays a test music file       |  test: Test an in-dev feature");
         println("                                      |");
         println("ls : List current directory           |  pwd : Show current path");
         println("cd : Change current directory         |  mkdir : Create directory");
@@ -566,6 +568,7 @@ void run_command() {
     else if (strscmp(cmd_buffer, "music", 5)) play_music("0:\\music\\ode.md");
     else if (strscmp(cmd_buffer, "reset", 5)) vfs_reset();
     else if (strscmp(cmd_buffer, "vgag", 4)) vgag_run();
+    else if (strscmp(cmd_buffer, "test", 4)) vgag_about();
     else println("Unknown command");
 
     //println("");

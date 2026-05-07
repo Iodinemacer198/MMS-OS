@@ -176,6 +176,12 @@ void vgag_blue() {
             vga[y * 80 + x] = (0x11 << 8) | 0xDB;
 }
 
+void vgag_scc(uint8_t color) {
+    for (int y = 0; y < 25; y++)
+        for (int x = 0; x < 80; x++)
+            vga[y * 80 + x] = (color << 8) | 0xDB;
+}
+
 void vgag_scblue() {
     for (int y = 2; y < 25; y++)
         for (int x = 0; x < 80; x++)
@@ -501,6 +507,7 @@ int psin_index2 = 0;
 
 char username_buffer2[20];
 char password_buffer2[20];
+char default_buffer[20];
 
 #define CMOS_ADDRESS 0x70
 #define CMOS_DATA    0x71
@@ -687,6 +694,30 @@ void vgag_login() {
         dcX = 28; dcY = 16;
         dprintc("Successfully registered!", 0x72);
         sleep(20000);
+        vgag_box();
+        dcX = 12; dcY = 10;
+        dprintc("Would you like to auto boot to shell (favored), or VGAG?", 0x70); dcX = 20; dcY = 12;
+        dprintc("Press 1 for shell;      Press 2 for VGAG", 0x70); dcX = 18; dcY = 14;
+        dprintc("This can be changed at any time in settings.", 0x70);
+        bool default_running = true;
+        while (default_running) {
+            char key = get_key();
+
+            if (!key) {
+                continue;
+            }
+            else if (key == '1') {
+                vfs_write_file("0:\\data\\default.ini", "1");
+                default_running = false;
+            }
+            else if (key == '2') {
+                vfs_write_file("0:\\data\\default.ini", "2");
+                default_running = false;
+            }
+            else {
+                continue;
+            }
+        }
         vgag_blue();
     }
 }
@@ -720,6 +751,25 @@ void vgag_printlni(const char* str) {
         }
     }
     dcX = 48;
+    dcY++;
+}
+
+void vgag_printlni2(const char* str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] == '*') {
+            dputcharc('*', 0xF9);
+        }
+        else if (str[i] == '%') {
+            dputcharc('%', 0xF8);
+        }
+        else if (str[i] == '#') {
+            dputcharc('#', 0xFC);
+        }
+        if (str[i] == '@') {
+            dputcharc('@', 0xF0);
+        }
+    }
+    dcX = 55;
     dcY++;
 }
 
@@ -772,6 +822,78 @@ void vgag_iodine() {
     vgag_printlni("*********##*********");
 }
 
+void vgag_iodine2() {
+    dcX = 55; dcY = 1;
+    vgag_printlni2("********************");
+    vgag_printlni2("*********#@*********");
+    vgag_printlni2("******%%*#@*%%******");
+    vgag_printlni2("****%****#@****%****");
+    vgag_printlni2("***%***%@##@****%***");
+    vgag_printlni2("***%**@@@##@@***%***");
+    vgag_printlni2("***%*@@@@##@@@@*%***");
+    vgag_printlni2("****@**@@##@@**@****");
+    vgag_printlni2("***##############***");
+    vgag_printlni2("*****@@@@##@@@@*****");
+    vgag_printlni2("*********##*********");
+}
+
+void vgag_printlnmms(const char* str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] == '*') {
+            dputcharc('*', 0xFB);
+        }
+        else if (str[i] == '%') {
+            dputcharc('%', 0xF5);
+        }
+        else if (str[i] == '#') {
+            dputcharc('#', 0xFD);
+        }
+        else if (str[i] == '@') {
+            dputcharc('@', 0xF5);
+        }
+        else if (str[i] == '-') {
+            dputcharc('-', 0xF7);
+        }
+        else if (str[i] == '+') {
+            dputcharc('+', 0xF7);
+        }
+        else if (str[i] == '=') {
+            dputcharc('=', 0xF7);
+        }
+    }
+    dcX = 55;
+    dcY++;
+}
+
+void vgag_mms() {
+    dcX = 55; dcY = 13;
+    vgag_printlnmms("@@@@%%%%@@%%*@@@@@@@");
+    vgag_printlnmms("@@#*@@@+%@%%%@@@@@@@");
+    vgag_printlnmms("@%#%@@%*#%#%%%@%@@@@");
+    vgag_printlnmms("%@@%#+#%###%%%@@@@@@");
+    vgag_printlnmms("%%##*++***+***#@@@@%");
+    vgag_printlnmms("@%#+===--*#++*#+#@@%");
+    vgag_printlnmms("@@#%%++======*++#@@@");
+    vgag_printlnmms("@@@@%##*++*+=##%#%%%");
+    vgag_printlnmms("@@@@%#%##########%%%");
+    vgag_printlnmms("@%%@@@@@@%%@@@@%%@@@");
+    vgag_printlnmms("@@@@@@@@@@@@@@@@@@%%");
+}
+
+/*
+@@@@%%%%@@%%*@@@@@@@    @ is black, = - is white, % is dark magenta/purple, # is light, + is blue
+@@#*@@@+%@%%%@@@@@@@
+@%#%@@%*#%#%%%@%@@@@
+%@@%#+#%###%%%@@@@@@
+%%##*++***+***#@@@@%
+@%#+===--*#++*#+#@@%
+@@#%%++======*++#@@@
+@@@@%##*++*+=##%#%%%
+@@@@%#%##########%%%
+@%%@@@@@@%%@@@@%%@@@
+@@@@@@@@@@@@@@@@@@%%
+*/
+
 char type_buffer[128];
 int type_index = 0;
 
@@ -788,15 +910,6 @@ void vgag_hello() {
     dprintc("and may contain some issues", 0x70);
     dcX = 11; dcY = 14;
     dprintc("Developed by iodinemacer with C",0x70);
-}
-
-void ind_login() {
-    clear_screen();
-    vgag_blue();
-    vgag_box();
-    vgag_login();
-    vgag_mol();
-    dcX = 0; dcY = 0;
 }
 
 int last_second = 0;
@@ -897,7 +1010,46 @@ void vgag_intro() {
 }
 
 void vgag_about() {
-    
+    vgag_scc(0x00);
+    sleep(1000);
+    vgag_scc(0x88);
+    sleep(1000);
+    vgag_scc(0x77);
+    sleep(1000);
+    vgag_scc(0xFF);
+    sleep(1000);
+    dcX = 4; dcY = 3;
+    dprintc("Molecular Multiverse Services OS:", 0xF0); dcX = 4; dcY = 4;
+    dprintc("developed by the the MMS team with C.", 0xF0); dcX = 4; dcY = 6;
+    dprintc("If you need support, contact therealiodinemacer", 0xF0); dcX = 4; dcY = 7;
+    dprintc("or join discord.com/ZAx3NN5TJY on Discord.", 0xF0); dcX = 4; dcY = 9;
+    dprintc("MMS-OS is the culmination of many MMS projects", 0xF0); dcX = 4; dcY = 10;
+    dprintc("spread across varied platforms and languages,", 0xF0); dcX = 4; dcY = 11;
+    dprintc("most notably the MMS-2 Discord bot, coded in JS.", 0xF0); dcX = 4; dcY = 13;
+    dprintc("While this project isn't particularly high-", 0xF0); dcX = 4; dcY = 14;
+    dprintc("quality, I've still enjoyed developing it,", 0xF0); dcX = 4; dcY = 15;
+    dprintc("it is pretty rewarding to build something", 0xF0); dcX = 4; dcY = 16;
+    dprintc("like this.", 0xF0); dcX = 4; dcY = 18;
+    dprintc("Press enter to return to shell.", 0xF0);
+    vgag_iodine2();
+    vgag_mms();
+    bool running = true;
+    while (running) {
+        unsigned char key = get_key();
+
+        if (!key) {
+            continue;
+        }
+        else if (key == '\n') {
+            running = false;
+        }
+    }
+    vgag_scc(0x77);
+    sleep(1000);
+    vgag_scc(0x88);
+    sleep(2000);
+    vgag_scc(0x00);
+    clear_screen();
 }
 
 void old_vgag_f1() {
@@ -1139,6 +1291,7 @@ void vgag_run() {
             continue;
         }
         else if (key == 27) {
+            cd("..");
             running = false;
         }
         else if (key == 9) {
@@ -1447,4 +1600,21 @@ void vgag_run() {
         }
     }
     clear_screen();
+}
+
+void ind_login() {
+    clear_screen();
+    vgag_blue();
+    vgag_box();
+    vgag_login();
+    vgag_mol();
+    dcX = 0; dcY = 0;
+    if (vfs_read_file("0:\\data\\default.ini", default_buffer)) {
+        if (strcmp(default_buffer, "1")) {}
+        else if (strcmp(default_buffer, "2")) {
+            vgag_run();
+        }
+        else {}
+    }
+    else {}
 }
