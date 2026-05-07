@@ -108,23 +108,23 @@ static const char* default_demo_source =
 static const char* user_demo = 
     "void main() {\n"
     "vgag_box();\n"
-    "dputcharc(21, 8, \"H \", 31);\n"
-    "dputcharc(21, 9, \"Li\", 159);\n"
-    "dputcharc(21, 10, \"Na\", 159);\n"
-    "dputcharc(21, 11, \"K \", 159);\n"
-    "dputcharc(21, 12, \"Rb\", 159);\n"
-    "dputcharc(21, 13, \"Cs\", 159);\n"
-    "dputcharc(21, 14, \"Fr\", 159);\n" // end g1
-    "dputcharc(23, 9, \"Be\", 207);\n"
-    "dputcharc(23, 10, \"Mg\", 207);\n"
-    "dputcharc(23, 11, \"Ca\", 207);\n"
-    "dputcharc(23, 12, \"Sr\", 207);\n"
-    "dputcharc(23, 13, \"Ba\", 207);\n"
-    "dputcharc(23, 14, \"Ra\", 207);\n" // end g2
-    "dputcharc(25, 11, \"Sc\", 95); \n"
-    "dputcharc(25, 12, \"Y \", 95);\n"
-    "dputcharc(25, 13, \"La\", 177);\n"
-    "dputcharc(25, 14, \"Ac\", 111);\n" // end g4
+    "dprintc(\"H \", 21, 8, 31);\n"
+    "dprintc(\"Li\", 21, 9, 159);\n"
+    "dprintc(\"Na\", 21, 10, 159);\n"
+    "dprintc(\"K \", 21, 11, 159);\n"
+    "dprintc(\"Rb\", 21, 12, 159);\n"
+    "dprintc(\"Cs\", 21, 13, 159);\n"
+    "dprintc(\"Fr\", 21, 14, 159);\n" // end g1
+    "dprintc(\"Be\", 23, 9, 207);\n"
+    "dprintc(\"Mg\", 23, 10, 207);\n"
+    "dprintc(\"Ca\", 23, 11, 207);\n"
+    "dprintc(\"Sr\", 23, 12, 207);\n"
+    "dprintc(\"Ba\", 23, 13, 207);\n"
+    "dprintc(\"Ra\", 23, 14, 207);\n" // end g2
+    "dprintc(\"Sc\", 25, 11, 95); \n"
+    "dprintc(\"Y \", 25, 12, 95);\n"
+    "dprintc(\"La\", 25, 13, 177);\n"
+    "dprintc(\"Ac\", 25, 14, 111);\n" // end g4
     "}";
     /*
     "dputcharc(27, 11, 'T', 95); dputcharc(28, 11, 'i', 95);\n" 

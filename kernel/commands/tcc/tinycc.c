@@ -139,11 +139,11 @@ void printtimeindex() {
 }
 
 #define TCC_INPUT_MAX 64
-#define TCC_SOURCE_MAX 512
-#define TCC_OUTPUT_MAX 512
+#define TCC_SOURCE_MAX 4096
+#define TCC_OUTPUT_MAX 4096
 #define TCC_VAR_MAX 16
 #define TCC_STACK_MAX 64
-#define TCC_CODE_MAX 96
+#define TCC_CODE_MAX 101
 #define TCC_NAME_MAX 16
 #define TCC_ERROR_MAX 96
 #define TCC_LINE_MAX 128
