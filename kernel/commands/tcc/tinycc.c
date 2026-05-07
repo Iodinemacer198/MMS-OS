@@ -49,8 +49,10 @@ void tcc_dputcharc(int dcX, int dcY, unsigned char c, uint8_t color) {
 }
 
 void tcc_dprintc(const char* str, int dcX, int dcY, uint8_t color) {
-    for (int i = 0; str[i] != 0; i++)
-        tcc_dputcharc(dcX, dcY, str[i], color);
+    int count = dcX;
+    for (int i = 0; str[i] != 0; i++) {
+        tcc_dputcharc(count, dcY, str[i], color); count++;
+    }
 }
 
 void test() {
