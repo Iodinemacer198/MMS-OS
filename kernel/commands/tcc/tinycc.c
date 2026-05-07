@@ -49,8 +49,10 @@ void tcc_dputcharc(int dcX, int dcY, unsigned char c, uint8_t color) {
 }
 
 void tcc_dprintc(const char* str, int dcX, int dcY, uint8_t color) {
-    for (int i = 0; str[i] != 0; i++)
-        tcc_dputcharc(dcX, dcY, str[i], color);
+    int count = dcX;
+    for (int i = 0; str[i] != 0; i++) {
+        tcc_dputcharc(count, dcY, str[i], color); count++;
+    }
 }
 
 void test() {
@@ -137,11 +139,11 @@ void printtimeindex() {
 }
 
 #define TCC_INPUT_MAX 64
-#define TCC_SOURCE_MAX 512
-#define TCC_OUTPUT_MAX 512
+#define TCC_SOURCE_MAX 4096
+#define TCC_OUTPUT_MAX 4096
 #define TCC_VAR_MAX 16
 #define TCC_STACK_MAX 64
-#define TCC_CODE_MAX 96
+#define TCC_CODE_MAX 101
 #define TCC_NAME_MAX 16
 #define TCC_ERROR_MAX 96
 #define TCC_LINE_MAX 128
@@ -179,8 +181,9 @@ typedef enum {
     BUILTIN_PUTCHAR = 8,
     BUILTIN_PUTCHARC = 9,
     BUILTIN_DPUTCHARC = 10,
-    BUILTIN_VGAGB = 11,
-    BUILTIN_VB = 12,
+    BUILTIN_DPRINTC = 11,
+    BUILTIN_VGAGB = 12,
+    BUILTIN_VB = 13,
 } TinyBuiltinId;
 
 typedef struct {
@@ -195,6 +198,7 @@ typedef struct {
     TinyBuiltinId id;
     int int_arg_count;
     bool accepts_string;
+    int trailing_int_arg_count;
 } TinyBuiltin;
 
 typedef struct {
@@ -208,19 +212,20 @@ typedef struct {
 } TinyParser;
 
 static const TinyBuiltin tiny_builtins[] = {
-    {"print", BUILTIN_PRINT, 0, true},
-    {"println", BUILTIN_PRINTLN, 0, true},
-    {"printint", BUILTIN_PRINTINT, 1, false},
-    {"beep", BUILTIN_BEEP, 2, false},
-    {"sleep", BUILTIN_SLEEP, 1, false},
-    {"clear", BUILTIN_CLEAR, 0, false},
-    {"test", BUILTIN_TEST, 0, false},
-    {"time", BUILTIN_TIME, 0, false},
-    {"putchar", BUILTIN_PUTCHAR, 1, false},
-    {"putcharc", BUILTIN_PUTCHARC, 2, false},
-    {"dputcharc", BUILTIN_DPUTCHARC, 4, false},
-    {"vgag_blue", BUILTIN_VGAGB, 0, false},
-    {"vgag_box", BUILTIN_VB, 0, false},
+    {"print", BUILTIN_PRINT, 0, true, 0},
+    {"println", BUILTIN_PRINTLN, 0, true, 0},
+    {"printint", BUILTIN_PRINTINT, 1, false, 0},
+    {"beep", BUILTIN_BEEP, 2, false, 0},
+    {"sleep", BUILTIN_SLEEP, 1, false, 0},
+    {"clear", BUILTIN_CLEAR, 0, false, 0},
+    {"test", BUILTIN_TEST, 0, false, 0},
+    {"time", BUILTIN_TIME, 0, false, 0},
+    {"putchar", BUILTIN_PUTCHAR, 1, false, 0},
+    {"putcharc", BUILTIN_PUTCHARC, 2, false, 0},
+    {"dputcharc", BUILTIN_DPUTCHARC, 4, false, 0},
+    {"dprintc", BUILTIN_DPRINTC, 0, true, 3},
+    {"vgag_blue", BUILTIN_VGAGB, 0, false, 0},
+    {"vgag_box", BUILTIN_VB, 0, false, 0},
 };
 
 static bool tiny_streq(const char* a, const char* b) {
@@ -599,9 +604,16 @@ static bool tiny_parse_call_stmt(TinyParser* parser, const char* name) {
 
     if (builtin->accepts_string) {
         if (!tiny_parse_string(parser, string_arg, 64)) return false;
+        if (builtin->trailing_int_arg_count > 0) {
+            for (int i = 0; i < builtin->trailing_int_arg_count; i++) {
+                if (!tiny_expect_char(parser, ',')) return false;
+                if (!tiny_parse_expr(parser)) return false;
+                arg_count++;
+            }
+        }
         if (!tiny_expect_char(parser, ')')) return false;
         if (!tiny_expect_char(parser, ';')) return false;
-        return tiny_emit(parser, OP_CALLSTR, builtin->id, 0, string_arg);
+        return tiny_emit(parser, OP_CALLSTR, builtin->id, arg_count, string_arg);
     }
 
     if (builtin->int_arg_count > 0) {
@@ -902,7 +914,7 @@ static bool tiny_serialize_program(const TinyInstruction* code, int code_count, 
                 if (!tiny_append_str(out, &len, "CALL ") || !tiny_append_int(out, &len, code[i].a) || !tiny_append_char(out, &len, ' ') || !tiny_append_int(out, &len, code[i].b)) goto overflow;
                 break;
             case OP_CALLSTR:
-                if (!tiny_append_str(out, &len, "CALLSTR ") || !tiny_append_int(out, &len, code[i].a) || !tiny_append_char(out, &len, ' ') || !tiny_append_escaped(out, &len, code[i].text)) goto overflow;
+                if (!tiny_append_str(out, &len, "CALLSTR ") || !tiny_append_int(out, &len, code[i].a) || !tiny_append_char(out, &len, ' ') || !tiny_append_int(out, &len, code[i].b) || !tiny_append_char(out, &len, ' ') || !tiny_append_escaped(out, &len, code[i].text)) goto overflow;
                 break;
             case OP_RET:
                 if (!tiny_append_str(out, &len, "RET")) goto overflow;
@@ -958,7 +970,7 @@ static void tiny_unescape_into(char* dest, const char* src) {
     dest[j] = '\0';
 }
 
-static bool tiny_vm_call(int builtin_id, int* stack, int* sp, const char* text, int* runtime_error) {
+static bool tiny_vm_call(int builtin_id, int* stack, int* sp, int arg_count, const char* text, int* runtime_error) {
     if (builtin_id == BUILTIN_PRINT) {
         print(text);
         return true;
@@ -1023,6 +1035,20 @@ static bool tiny_vm_call(int builtin_id, int* stack, int* sp, const char* text, 
         dy = stack[--(*sp)];
         dx = stack[--(*sp)];
         tcc_dputcharc((int)dx, (int)dy, (unsigned char)value, (uint8_t)color);
+        return true;
+    }
+    if (builtin_id == BUILTIN_DPRINTC) {
+        int color;
+        int dy;
+        int dx;
+        if (arg_count != 3 || *sp < 3) {
+            *runtime_error = 1;
+            return false;
+        }
+        color = stack[--(*sp)];
+        dy = stack[--(*sp)];
+        dx = stack[--(*sp)];
+        tcc_dprintc(text, dx, dy, (uint8_t)color);
         return true;
     }
     if (builtin_id == BUILTIN_SLEEP) {
@@ -1192,16 +1218,20 @@ static bool tiny_execute_program(const char* program, int* exit_code) {
             if (line[pos] == ' ') pos++;
             arg_count = tiny_parse_int_at(line, &pos);
             if (sp < arg_count) runtime_error = 1;
-            else if (!tiny_vm_call(builtin_id, stack, &sp, "", &runtime_error)) {
+            else if (!tiny_vm_call(builtin_id, stack, &sp, arg_count, "", &runtime_error)) {
             }
         }
         else if (line[0] == 'C' && line[1] == 'A' && line[2] == 'L' && line[3] == 'L' && line[4] == 'S') {
             int pos = 8;
             char text[64];
             int builtin_id = tiny_parse_int_at(line, &pos);
+            int arg_count = 0;
+            if (line[pos] == ' ') pos++;
+            arg_count = tiny_parse_int_at(line, &pos);
             if (line[pos] == ' ') pos++;
             tiny_unescape_into(text, &line[pos]);
-            if (!tiny_vm_call(builtin_id, stack, &sp, text, &runtime_error)) {
+            if (sp < arg_count) runtime_error = 1;
+            else if (!tiny_vm_call(builtin_id, stack, &sp, arg_count, text, &runtime_error)) {
             }
         }
         else if (tiny_streq(line, "RET")) {

@@ -108,30 +108,25 @@ static const char* default_demo_source =
 static const char* user_demo = 
     "void main() {\n"
     "vgag_box();\n"
-    "dputcharc(21, 8, 'H', 31);\n"
+    "dprintc(\"H \", 21, 8, 31);\n"
+    "dprintc(\"Li\", 21, 9, 159);\n"
+    "dprintc(\"Na\", 21, 10, 159);\n"
+    "dprintc(\"K \", 21, 11, 159);\n"
+    "dprintc(\"Rb\", 21, 12, 159);\n"
+    "dprintc(\"Cs\", 21, 13, 159);\n"
+    "dprintc(\"Fr\", 21, 14, 159);\n" // end g1
+    "dprintc(\"Be\", 23, 9, 207);\n"
+    "dprintc(\"Mg\", 23, 10, 207);\n"
+    "dprintc(\"Ca\", 23, 11, 207);\n"
+    "dprintc(\"Sr\", 23, 12, 207);\n"
+    "dprintc(\"Ba\", 23, 13, 207);\n"
+    "dprintc(\"Ra\", 23, 14, 207);\n" // end g2
+    "dprintc(\"Sc\", 25, 11, 95); \n"
+    "dprintc(\"Y \", 25, 12, 95);\n"
+    "dprintc(\"La\", 25, 13, 177);\n"
+    "dprintc(\"Ac\", 25, 14, 111);\n" // end g4
     "}";
-
-/*
-static const char* user_demo2 = 
-    "void main() {\n"
-    "vgag_box();\n"
-    "dputcharc(21, 8, 'H', 31); dputcharc(22, 8, ' ', 31);\n"
-    "dputcharc(21, 9, 'L', 159); dputcharc(22, 9, 'i', 159);\n"
-    "dputcharc(21, 10, 'N', 159); dputcharc(22, 10, 'a', 159);\n"
-    "dputcharc(21, 11, 'K', 159); dputcharc(22, 11, ' ', 159);\n"
-    "dputcharc(21, 12, 'R', 159); dputcharc(22, 12, 'b', 159);\n"
-    "dputcharc(21, 13, 'C', 159); dputcharc(22, 13, 's', 159);\n"
-    "dputcharc(21, 14, 'F', 159); dputcharc(22, 14, 'r', 159);\n" // end g1
-    "dputcharc(23, 9, 'B', 207); dputcharc(24, 9, 'e', 207);\n"
-    "dputcharc(23, 10, 'M', 207); dputcharc(24, 10, 'g', 207);\n"
-    "dputcharc(23, 11, 'C', 207); dputcharc(24, 11, 'a', 207);\n"
-    "dputcharc(23, 12, 'S', 207); dputcharc(24, 12, 'r', 207);\n"
-    "dputcharc(23, 13, 'B', 207); dputcharc(24, 13, 'a', 207);\n"
-    "dputcharc(23, 14, 'R', 207); dputcharc(24, 14, 'a', 207);\n" // end g2
-    "dputcharc(25, 11, 'S', 95); dputcharc(26, 11, 'c', 95);\n"
-    "dputcharc(25, 12, 'Y', 95); dputcharc(26, 12, ' ', 95);\n"
-    "dputcharc(25, 13, 'L', 177); dputcharc(26, 13, 'a', 177);\n"
-    "dputcharc(25, 14, 'A', 111); dputcharc(26, 14, 'c', 111);\n" // end g4
+    /*
     "dputcharc(27, 11, 'T', 95); dputcharc(28, 11, 'i', 95);\n" 
     "dputcharc(27, 12, 'Z', 95); dputcharc(28, 12, 'r', 95);\n"
     "dputcharc(27, 13, 'H', 95); dputcharc(28, 13, 'f', 95);\n"
@@ -220,7 +215,8 @@ static const char* user_demo2 =
     "dputcharc(51, 16, 'Y', 177); dputcharc(52, 16, 'b', 177);\n" 
     "dputcharc(53, 16, 'L', 177); dputcharc(54, 16, 'u', 177);\n" // end actinds
     "}";
-*/
+    */
+
     
 static int str_len(const char* str) {
     int len = 0;
