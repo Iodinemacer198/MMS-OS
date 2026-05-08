@@ -15,6 +15,8 @@ extern void dprintintc(int num, uint8_t color);
 extern void dprintc(const char* str, uint8_t color);
 extern void cd(const char* path);
 extern void dprintmultc(unsigned char c, int l, uint8_t color);
+extern void dprintfloatc(float num, uint8_t color);
+extern void printfloat(float num);
 
 extern int dcX;
 extern int dcY;
@@ -262,6 +264,23 @@ static bool str_starts_with(const char* str, const char* pref) {
     return true;
 }
 
+static bool str_ends_with(const char* str, const char* suff) { // don't touch things that (sometimes) work already
+    int str_len_val = str_len(str);
+    int suff_len = str_len(suff);
+
+    if (suff_len > str_len_val)
+        return false;
+
+    int start = str_len_val - suff_len;
+
+    for (int i = 0; i < suff_len; i++) {
+        if (str[start + i] != suff[i])
+            return false;
+    }
+
+    return true;
+}
+
 /*
 static char to_upper_ascii(char c) {
     if (c >= 'a' && c <= 'z') return (char)(c - ('a' - 'A'));
@@ -376,6 +395,10 @@ static bool normalize_path(const char* path, char* out) {
 
 static bool is_hidden_path(const char* absolute_path) {
     return streq(absolute_path, "0:\\data") || str_starts_with(absolute_path, "0:\\data\\");
+}
+
+static bool vgag_is_hidden_path(const char* absolute_path) {
+    return (str_ends_with(absolute_path, ".c"));
 }
 
 static bool format_name_83(const char* component, char out[11]) {
@@ -963,12 +986,21 @@ void vfs_list_current_dir() {
         if (is_hidden_path(full)) continue;
 
         if (e.attr & ATTR_DIRECTORY) print("[DIR] ");
+        else if (str_ends_with(disp, ".tbc")) print("[EXEC] ");
+        else if (str_ends_with(disp, ".c")) print("[PRGM] ");
         else print("[FILE] ");
         print(disp);
         if (!(e.attr & ATTR_DIRECTORY)) {
-            print(" (");
-            printint((int)e.file_size);
-            print(" bytes)");
+            if ((int)e.file_size > 999) {
+                print(" (");
+                printfloat(((float)e.file_size/1000));
+                print(" kb)");
+            }
+            else {
+                print(" (");
+                printint((int)e.file_size);
+                print(" bytes)");
+            }
         }
         putchar('\n');
         empty = false;
@@ -989,8 +1021,8 @@ void vfs_list_current_dir() {
 void vgag_list_current_dir() {
     cd("0:\\vgag");
     dcX = 11; dcY = 6;
-    dprintc(cwd_path, 0x70); dcY++; dcX = 11;
-    dprintmultc(0xCD, 7, 0x70);
+    dprintc(cwd_path, 0x70); dcY++; dcX = 10;
+    dputcharc(0xCC, 0x70); dprintmultc(0xCD, 8, 0x70); dputcharc(0xBE, 0x70);
     bool empty = true;
     int count = 1;
 
@@ -1020,15 +1052,22 @@ void vgag_list_current_dir() {
             str_cpy(full + p, disp);
         }
 
-        if (is_hidden_path(full)) continue;
+        if (vgag_is_hidden_path(disp)) continue;
 
-        if (e.attr & ATTR_DIRECTORY) {dprintintc(count, 0x70); dprintc(" [DIR] ", 0x70);} 
-        else {dprintintc(count, 0x70); dprintc(" [FILE] ", 0x70);}
+        if (e.attr & ATTR_DIRECTORY) {dprintc("  ", 0x70); dprintintc(count, 0x70); dprintc(".", 0x70); dprintc(" [DIR] ", 0x70);} 
+        else {dprintc("  ", 0x70); dprintintc(count, 0x70); dprintc(".", 0x70); dprintc(" [PRGM] ", 0x70);}
         dprintc(disp, 0x70);
         if (!(e.attr & ATTR_DIRECTORY)) {
-            dprintc(" (", 0x70);
-            dprintintc((int)e.file_size, 0x70);
-            dprintc(" bytes)", 0x70);
+            if ((int)e.file_size > 999) {
+                dprintc(" (", 0x70);
+                dprintfloatc(((float)e.file_size/1000), 0x70);
+                dprintc(" kb)", 0x70);
+            }
+            else {
+                dprintc(" (", 0x70);
+                dprintintc((int)e.file_size, 0x70);
+                dprintc(" bytes)", 0x70);
+            }
         }
         dcX = 11; dcY++;
         count++;

@@ -308,6 +308,46 @@ void printint(int num) {
         putchar(buf[i]);
 }
 
+void printfloat(float num) {
+    if (num < 0) {
+        putchar('-');
+        num = -num;
+    }
+
+    int int_part = (int)num;
+    printint(int_part);
+
+    float frac = num - (float)int_part;
+
+    if (frac == 0.0f) {
+        return;
+    }
+
+    char buf[16];
+    int i = 0;
+
+    for (int j = 0; j < 6; j++) { 
+        frac *= 10;
+        int digit = (int)frac;
+        buf[i++] = '0' + digit;
+        frac -= digit;
+    }
+
+    while (i > 0 && buf[i - 1] == '0') {
+        i--;
+    }
+
+    if (i == 0) {
+        return;
+    }
+
+    putchar('.');
+
+    for (int j = 0; j < i; j++) {
+        putchar(buf[j]);
+    }
+}
+
 // Sound
 
 void play_sound(uint32_t frequency) {
