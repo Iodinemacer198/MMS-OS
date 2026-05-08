@@ -48,7 +48,7 @@ extern int cursorX;
 
 #define MAX_PATH_PARTS 16
 #define MAX_PATH_LEN 64
-#define FILE_BUFFER_LIMIT (SECTOR_SIZE * 8)
+#define FILE_BUFFER_LIMIT (SECTOR_SIZE * 16)
 
 typedef struct __attribute__((packed)) {
     uint8_t jump[3];
@@ -108,110 +108,124 @@ static const char* default_demo_source =
 static const char* user_demo = 
     "void main() {\n"
     "vgag_box();\n"
-    "dprintc(\"H \", 21, 8, 31);\n"
-    "dprintc(\"Li\", 21, 9, 159);\n"
-    "dprintc(\"Na\", 21, 10, 159);\n"
-    "dprintc(\"K \", 21, 11, 159);\n"
-    "dprintc(\"Rb\", 21, 12, 159);\n"
-    "dprintc(\"Cs\", 21, 13, 159);\n"
-    "dprintc(\"Fr\", 21, 14, 159);\n" // end g1
-    "dprintc(\"Be\", 23, 9, 207);\n"
-    "dprintc(\"Mg\", 23, 10, 207);\n"
-    "dprintc(\"Ca\", 23, 11, 207);\n"
-    "dprintc(\"Sr\", 23, 12, 207);\n"
-    "dprintc(\"Ba\", 23, 13, 207);\n"
-    "dprintc(\"Ra\", 23, 14, 207);\n" // end g2
-    "dprintc(\"Sc\", 25, 11, 95);\n"
-    "dprintc(\"Y \", 25, 12, 95);\n"
-    "dprintc(\"La\", 25, 13, 177);\n"
-    "dprintc(\"Ac\", 25, 14, 111);\n" // end g4
-    "dprintc(\"Ti\", 27, 11, 95);\n"
-    "dprintc(\"Zr\", 27, 12, 95);\n"
-    "dprintc(\"Hf\", 27, 13, 95);\n"
-    "dprintc(\"Rf\", 27, 14, 95);\n" // end g5
-    "dprintc(\"V \", 29, 11, 95);\n"
-    "dprintc(\"Nb\", 29, 12, 95);\n"
-    "dprintc(\"Ta\", 29, 13, 95);\n"
-    "dprintc(\"Db\", 29, 14, 95);\n" // end g6
-    "dprintc(\"Cr\", 31, 11, 95);\n"
-    "dprintc(\"Mo\", 31, 12, 95);\n"
-    "dprintc(\"W \", 31, 13, 95);\n"
-    "dprintc(\"Sg\", 31, 14, 95);\n" // end g7
-    "dprintc(\"Mn\", 33, 11, 95);\n"
-    "dprintc(\"Tc\", 33, 12, 95);\n"
-    "dprintc(\"Re\", 33, 13, 95);\n"
-    "dprintc(\"Bh\", 33, 14, 95);\n" // end g8
-    "dprintc(\"Fe\", 35, 11, 95);\n"
-    "dprintc(\"Ru\", 35, 12, 95);\n"
-    "dprintc(\"Os\", 35, 13, 95);\n"
-    "dprintc(\"Hs\", 35, 14, 95);\n" // end g9
-    "dprintc(\"Co\", 37, 11, 95);\n"
-    "dprintc(\"Rh\", 37, 12, 95);\n"
-    "dprintc(\"Ir\", 37, 13, 95);\n"
-    "dprintc(\"Mt\", 37, 14, 143);\n" // end g10
-    "dprintc(\"Ni\", 39, 11, 95);\n"
-    "dprintc(\"Pd\", 39, 12, 95);\n"
-    "dprintc(\"Pt\", 39, 13, 95);\n"
-    "dprintc(\"Ds\", 39, 14, 143);\n" // end g11
-    "dprintc(\"Cu\", 41, 11, 95);\n"
-    "dprintc(\"Ag\", 41, 12, 95);\n"
-    "dprintc(\"Au\", 41, 13, 95);\n"
-    "dprintc(\"Rg\", 41, 14, 143);\n" // end g12
-    "dprintc(\"Zn\", 43, 11, 95);\n"
-    "dprintc(\"Cd\", 43, 12, 95);\n"
-    "dprintc(\"Hg\", 43, 13, 95);\n"
-    "dprintc(\"Cn\", 43, 14, 143);\n" // end g13
-    "dprintc(\"B \", 45, 9, 224);\n"
-    "dprintc(\"Al\", 45, 10, 160);\n"
-    "dprintc(\"Ga\", 45, 11, 160);\n"
-    "dprintc(\"In\", 45, 12, 160);\n"
-    "dprintc(\"Ti\", 45, 13, 160);\n"
-    "dprintc(\"Nh\", 45, 14, 143);\n" // end g14
-    "dprintc(\"C \", 47, 9, 31);\n"
-    "dprintc(\"Si\", 47, 10, 224);\n"
-    "dprintc(\"Ge\", 47, 11, 224);\n"
-    "dprintc(\"Sn\", 47, 12, 160);\n"
-    "dprintc(\"Pb\", 47, 13, 160);\n"
-    "dprintc(\"Fl\", 47, 14, 143);\n" // end g15
-    "dprintc(\"N \", 49, 9, 31);\n"
-    "dprintc(\"P \", 49, 10, 31);\n"
-    "dprintc(\"As\", 49, 11, 224);\n"
-    "dprintc(\"Sb\", 49, 12, 224);\n"
-    "dprintc(\"Bi\", 49, 13, 160);\n"
-    "dprintc(\"Mc\", 49, 14, 143);\n" // end g16
-    "dprintc(\"O \", 51, 9, 31);\n"
-    "dprintc(\"S \", 51, 10, 31);\n"
-    "dprintc(\"Se\", 51, 11, 31);\n"
-    "dprintc(\"Te\", 51, 12, 224);\n"
-    "dprintc(\"Po\", 51, 13, 160);\n"
-    "dprintc(\"Lv\", 51, 14, 143);\n" // end g17
-    "dprintc(\"F \", 53, 9, 47);\n"
-    "dprintc(\"Cl\", 53, 10, 47);\n"
-    "dprintc(\"Br\", 53, 11, 47);\n"
-    "dprintc(\"I \", 53, 12, 47);\n"
-    "dprintc(\"At\", 53, 13, 160);\n"
-    "dprintc(\"Ts\", 53, 14, 143);\n" // eng g18
-    "dprintc(\"He\", 55, 8, 79);\n"
-    "dprintc(\"Ne\", 55, 9, 79);\n"
-    "dprintc(\"Ar\", 55, 10, 79);\n"
-    "dprintc(\"Kr\", 55, 11, 79);\n"
-    "dprintc(\"Xe\", 55, 12, 79);\n"
-    "dprintc(\"Rn\", 55, 13, 79);\n"
-    "dprintc(\"Og\", 55, 14, 143);\n" // end g19
-    "dprintc(\"Ce\", 27, 16, 177);\n"
-    "dprintc(\"Pr\", 29, 16, 177);\n"
-    "dprintc(\"Nd\", 31, 16, 177);\n"
-    "dprintc(\"Pm\", 33, 16, 177);\n"
-    "dprintc(\"Sm\", 35, 16, 177);\n"
-    "dprintc(\"Eu\", 37, 16, 177);\n"
-    "dprintc(\"Gd\", 39, 16, 177);\n"
-    "dprintc(\"Tb\", 41, 16, 177);\n"
-    "dprintc(\"Dy\", 43, 16, 177);\n"
-    "dprintc(\"Ho\", 45, 16, 177);\n"
-    "dprintc(\"Er\", 47, 16, 177);\n"
-    "dprintc(\"Tm\", 49, 16, 177);\n"
-    "dprintc(\"Yb\", 51, 16, 177);\n"
-    "dprintc(\"Lu\", 53, 16, 177);\n" // end actinids
+    "dprintc(\"H \", 21, 7, 31);\n"
+    "dprintc(\"Li\", 21, 8, 159);\n"
+    "dprintc(\"Na\", 21, 9, 159);\n"
+    "dprintc(\"K \", 21, 10, 159);\n"
+    "dprintc(\"Rb\", 21, 11, 159);\n"
+    "dprintc(\"Cs\", 21, 12, 159);\n"
+    "dprintc(\"Fr\", 21, 13, 159);\n" // end g1
+    "dprintc(\"Be\", 23, 8, 207);\n"
+    "dprintc(\"Mg\", 23, 9, 207);\n"
+    "dprintc(\"Ca\", 23, 10, 207);\n"
+    "dprintc(\"Sr\", 23, 11, 207);\n"
+    "dprintc(\"Ba\", 23, 12, 207);\n"
+    "dprintc(\"Ra\", 23, 13, 207);\n" // end g2
+    "dprintc(\"Sc\", 25, 10, 95);\n"
+    "dprintc(\"Y \", 25, 11, 95);\n"
+    "dprintc(\"La\", 25, 12, 177);\n"
+    "dprintc(\"Ac\", 25, 13, 111);\n" // end g4
+    "dprintc(\"Ti\", 27, 10, 95);\n"
+    "dprintc(\"Zr\", 27, 11, 95);\n"
+    "dprintc(\"Hf\", 27, 12, 95);\n"
+    "dprintc(\"Rf\", 27, 13, 95);\n" // end g5
+    "dprintc(\"V \", 29, 10, 95);\n"
+    "dprintc(\"Nb\", 29, 11, 95);\n"
+    "dprintc(\"Ta\", 29, 12, 95);\n"
+    "dprintc(\"Db\", 29, 13, 95);\n" // end g6
+    "dprintc(\"Cr\", 31, 10, 95);\n"
+    "dprintc(\"Mo\", 31, 11, 95);\n"
+    "dprintc(\"W \", 31, 12, 95);\n"
+    "dprintc(\"Sg\", 31, 13, 95);\n" // end g7
+    "dprintc(\"Mn\", 33, 10, 95);\n"
+    "dprintc(\"Tc\", 33, 11, 95);\n"
+    "dprintc(\"Re\", 33, 12, 95);\n"
+    "dprintc(\"Bh\", 33, 13, 95);\n" // end g8
+    "dprintc(\"Fe\", 35, 10, 95);\n"
+    "dprintc(\"Ru\", 35, 11, 95);\n"
+    "dprintc(\"Os\", 35, 12, 95);\n"
+    "dprintc(\"Hs\", 35, 13, 95);\n" // end g9
+    "dprintc(\"Co\", 37, 10, 95);\n"
+    "dprintc(\"Rh\", 37, 11, 95);\n"
+    "dprintc(\"Ir\", 37, 12, 95);\n"
+    "dprintc(\"Mt\", 37, 13, 143);\n" // end g10
+    "dprintc(\"Ni\", 39, 10, 95);\n"
+    "dprintc(\"Pd\", 39, 11, 95);\n"
+    "dprintc(\"Pt\", 39, 12, 95);\n"
+    "dprintc(\"Ds\", 39, 13, 143);\n" // end g11
+    "dprintc(\"Cu\", 41, 10, 95);\n"
+    "dprintc(\"Ag\", 41, 11, 95);\n"
+    "dprintc(\"Au\", 41, 12, 95);\n"
+    "dprintc(\"Rg\", 41, 13, 143);\n" // end g12
+    "dprintc(\"Zn\", 43, 10, 95);\n"
+    "dprintc(\"Cd\", 43, 11, 95);\n"
+    "dprintc(\"Hg\", 43, 12, 95);\n"
+    "dprintc(\"Cn\", 43, 13, 143);\n" // end g13
+    "dprintc(\"B \", 45, 8, 224);\n"
+    "dprintc(\"Al\", 45, 9, 160);\n"
+    "dprintc(\"Ga\", 45, 10, 160);\n"
+    "dprintc(\"In\", 45, 11, 160);\n"
+    "dprintc(\"Ti\", 45, 12, 160);\n"
+    "dprintc(\"Nh\", 45, 13, 143);\n" // end g14
+    "dprintc(\"C \", 47, 8, 31);\n"
+    "dprintc(\"Si\", 47, 9, 224);\n"
+    "dprintc(\"Ge\", 47, 10, 224);\n"
+    "dprintc(\"Sn\", 47, 11, 160);\n"
+    "dprintc(\"Pb\", 47, 12, 160);\n"
+    "dprintc(\"Fl\", 47, 13, 143);\n" // end g15
+    "dprintc(\"N \", 49, 8, 31);\n"
+    "dprintc(\"P \", 49, 9, 31);\n"
+    "dprintc(\"As\", 49, 10, 224);\n"
+    "dprintc(\"Sb\", 49, 11, 224);\n"
+    "dprintc(\"Bi\", 49, 12, 160);\n"
+    "dprintc(\"Mc\", 49, 13, 143);\n" // end g16
+    "dprintc(\"O \", 51, 8, 31);\n"
+    "dprintc(\"S \", 51, 9, 31);\n"
+    "dprintc(\"Se\", 51, 10, 31);\n"
+    "dprintc(\"Te\", 51, 11, 224);\n"
+    "dprintc(\"Po\", 51, 12, 160);\n"
+    "dprintc(\"Lv\", 51, 13, 143);\n" // end g17
+    "dprintc(\"F \", 53, 8, 47);\n"
+    "dprintc(\"Cl\", 53, 9, 47);\n"
+    "dprintc(\"Br\", 53, 10, 47);\n"
+    "dprintc(\"I \", 53, 11, 47);\n"
+    "dprintc(\"At\", 53, 12, 160);\n"
+    "dprintc(\"Ts\", 53, 13, 143);\n" // eng g18
+    "dprintc(\"He\", 55, 7, 79);\n"
+    "dprintc(\"Ne\", 55, 8, 79);\n"
+    "dprintc(\"Ar\", 55, 9, 79);\n"
+    "dprintc(\"Kr\", 55, 10, 79);\n"
+    "dprintc(\"Xe\", 55, 11, 79);\n"
+    "dprintc(\"Rn\", 55, 12, 79);\n"
+    "dprintc(\"Og\", 55, 13, 143);\n" // end g19
+    "dprintc(\"Ce\", 27, 15, 177);\n"
+    "dprintc(\"Pr\", 29, 15, 177);\n"
+    "dprintc(\"Nd\", 31, 15, 177);\n"
+    "dprintc(\"Pm\", 33, 15, 177);\n"
+    "dprintc(\"Sm\", 35, 15, 177);\n"
+    "dprintc(\"Eu\", 37, 15, 177);\n"
+    "dprintc(\"Gd\", 39, 15, 177);\n"
+    "dprintc(\"Tb\", 41, 15, 177);\n"
+    "dprintc(\"Dy\", 43, 15, 177);\n"
+    "dprintc(\"Ho\", 45, 15, 177);\n"
+    "dprintc(\"Er\", 47, 15, 177);\n"
+    "dprintc(\"Tm\", 49, 15, 177);\n"
+    "dprintc(\"Yb\", 51, 15, 177);\n"
+    "dprintc(\"Lu\", 53, 15, 177);\n" // end actinids
+    "dprintc(\"Th\", 27, 16, 111);\n"
+    "dprintc(\"Pa\", 29, 16, 111);\n"
+    "dprintc(\"U \", 31, 16, 111);\n"
+    "dprintc(\"Np\", 33, 16, 111);\n"
+    "dprintc(\"Pu\", 35, 16, 111);\n"
+    "dprintc(\"Am\", 37, 16, 111);\n"
+    "dprintc(\"Cm\", 39, 16, 111);\n"
+    "dprintc(\"Bk\", 41, 16, 111);\n"
+    "dprintc(\"Cf\", 43, 16, 111);\n"
+    "dprintc(\"Es\", 45, 16, 111);\n"
+    "dprintc(\"Fm\", 47, 16, 111);\n"
+    "dprintc(\"Md\", 49, 16, 111);\n"
+    "dprintc(\"No\", 51, 16, 111);\n"
+    "dprintc(\"Lr\", 53, 16, 111);\n" // end lanthanides
     "}";
 
     
