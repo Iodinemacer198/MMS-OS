@@ -15,6 +15,8 @@ extern void dprintintc(int num, uint8_t color);
 extern void dprintc(const char* str, uint8_t color);
 extern void cd(const char* path);
 extern void dprintmultc(unsigned char c, int l, uint8_t color);
+extern void dprintfloatc(float num, uint8_t color);
+extern void printfloat(float num);
 
 extern int dcX;
 extern int dcY;
@@ -25,13 +27,13 @@ extern int cursorX;
 
 /* FAT16 layout starting at LBA 1 on the raw drive. */
 #define FS_BASE_LBA 1
-#define FS_TOTAL_SECTORS 2097152 /* 1 GiB raw disk from run.sh */
+#define FS_TOTAL_SECTORS 204800 /* 100 MiB raw disk */
 #define FS_RESERVED_SECTORS 1
 #define FS_NUM_FATS 2
 #define FS_ROOT_ENTRIES 512
 #define FS_ROOT_DIR_SECTORS ((FS_ROOT_ENTRIES * 32 + (SECTOR_SIZE - 1)) / SECTOR_SIZE)
-#define FS_SECTORS_PER_FAT 256
-#define FS_SECTORS_PER_CLUSTER 32
+#define FS_SECTORS_PER_FAT 794
+#define FS_SECTORS_PER_CLUSTER 1
 
 #define FAT16_EOC 0xFFFF
 #define FAT16_FREE 0x0000
@@ -48,7 +50,7 @@ extern int cursorX;
 
 #define MAX_PATH_PARTS 16
 #define MAX_PATH_LEN 64
-#define FILE_BUFFER_LIMIT (SECTOR_SIZE * FS_SECTORS_PER_CLUSTER * 32)
+#define FILE_BUFFER_LIMIT (SECTOR_SIZE * 16)
 
 typedef struct __attribute__((packed)) {
     uint8_t jump[3];
@@ -108,120 +110,127 @@ static const char* default_demo_source =
 static const char* user_demo2 = 
     "void main() {\n"
     "vgag_box();\n"
-    "dprintc(\"H \", 21, 8, 31);\n"
+    "dprintc(\"H \", 21, 7, 31);\n"
+    "dprintc(\"Li\", 21, 8, 159);\n"
+    "dprintc(\"Na\", 21, 9, 159);\n"
+    "dprintc(\"K \", 21, 10, 159);\n"
+    "dprintc(\"Rb\", 21, 11, 159);\n"
+    "dprintc(\"Cs\", 21, 12, 159);\n"
+    "dprintc(\"Fr\", 21, 13, 159);\n" // end g1
+    "dprintc(\"Be\", 23, 8, 207);\n"
+    "dprintc(\"Mg\", 23, 9, 207);\n"
+    "dprintc(\"Ca\", 23, 10, 207);\n"
+    "dprintc(\"Sr\", 23, 11, 207);\n"
+    "dprintc(\"Ba\", 23, 12, 207);\n"
+    "dprintc(\"Ra\", 23, 13, 207);\n" // end g2
+    "dprintc(\"Sc\", 25, 10, 95);\n"
+    "dprintc(\"Y \", 25, 11, 95);\n"
+    "dprintc(\"La\", 25, 12, 177);\n"
+    "dprintc(\"Ac\", 25, 13, 111);\n" // end g4
+    "dprintc(\"Ti\", 27, 10, 95);\n"
+    "dprintc(\"Zr\", 27, 11, 95);\n"
+    "dprintc(\"Hf\", 27, 12, 95);\n"
+    "dprintc(\"Rf\", 27, 13, 95);\n" // end g5
+    "dprintc(\"V \", 29, 10, 95);\n"
+    "dprintc(\"Nb\", 29, 11, 95);\n"
+    "dprintc(\"Ta\", 29, 12, 95);\n"
+    "dprintc(\"Db\", 29, 13, 95);\n" // end g6
+    "dprintc(\"Cr\", 31, 10, 95);\n"
+    "dprintc(\"Mo\", 31, 11, 95);\n"
+    "dprintc(\"W \", 31, 12, 95);\n"
+    "dprintc(\"Sg\", 31, 13, 95);\n" // end g7
+    "dprintc(\"Mn\", 33, 10, 95);\n"
+    "dprintc(\"Tc\", 33, 11, 95);\n"
+    "dprintc(\"Re\", 33, 12, 95);\n"
+    "dprintc(\"Bh\", 33, 13, 95);\n" // end g8
+    "dprintc(\"Fe\", 35, 10, 95);\n"
+    "dprintc(\"Ru\", 35, 11, 95);\n"
+    "dprintc(\"Os\", 35, 12, 95);\n"
+    "dprintc(\"Hs\", 35, 13, 95);\n" // end g9
+    "dprintc(\"Co\", 37, 10, 95);\n"
+    "dprintc(\"Rh\", 37, 11, 95);\n"
+    "dprintc(\"Ir\", 37, 12, 95);\n"
+    "dprintc(\"Mt\", 37, 13, 143);\n" // end g10
+    "dprintc(\"Ni\", 39, 10, 95);\n"
+    "dprintc(\"Pd\", 39, 11, 95);\n"
+    "dprintc(\"Pt\", 39, 12, 95);\n"
+    "dprintc(\"Ds\", 39, 13, 143);\n" // end g11
+    "dprintc(\"Cu\", 41, 10, 95);\n"
+    "dprintc(\"Ag\", 41, 11, 95);\n"
+    "dprintc(\"Au\", 41, 12, 95);\n"
+    "dprintc(\"Rg\", 41, 13, 143);\n" // end g12
+    "dprintc(\"Zn\", 43, 10, 95);\n"
+    "dprintc(\"Cd\", 43, 11, 95);\n"
+    "dprintc(\"Hg\", 43, 12, 95);\n"
+    "dprintc(\"Cn\", 43, 13, 143);\n" // end g13
+    "dprintc(\"B \", 45, 8, 224);\n"
+    "dprintc(\"Al\", 45, 9, 160);\n"
+    "dprintc(\"Ga\", 45, 10, 160);\n"
+    "dprintc(\"In\", 45, 11, 160);\n"
+    "dprintc(\"Ti\", 45, 12, 160);\n"
+    "dprintc(\"Nh\", 45, 13, 143);\n" // end g14
+    "dprintc(\"C \", 47, 8, 31);\n"
+    "dprintc(\"Si\", 47, 9, 224);\n"
+    "dprintc(\"Ge\", 47, 10, 224);\n"
+    "dprintc(\"Sn\", 47, 11, 160);\n"
+    "dprintc(\"Pb\", 47, 12, 160);\n"
+    "dprintc(\"Fl\", 47, 13, 143);\n" // end g15
+    "dprintc(\"N \", 49, 8, 31);\n"
+    "dprintc(\"P \", 49, 9, 31);\n"
+    "dprintc(\"As\", 49, 10, 224);\n"
+    "dprintc(\"Sb\", 49, 11, 224);\n"
+    "dprintc(\"Bi\", 49, 12, 160);\n"
+    "dprintc(\"Mc\", 49, 13, 143);\n" // end g16
+    "dprintc(\"O \", 51, 8, 31);\n"
+    "dprintc(\"S \", 51, 9, 31);\n"
+    "dprintc(\"Se\", 51, 10, 31);\n"
+    "dprintc(\"Te\", 51, 11, 224);\n"
+    "dprintc(\"Po\", 51, 12, 160);\n"
+    "dprintc(\"Lv\", 51, 13, 143);\n" // end g17
+    "dprintc(\"F \", 53, 8, 47);\n"
+    "dprintc(\"Cl\", 53, 9, 47);\n"
+    "dprintc(\"Br\", 53, 10, 47);\n"
+    "dprintc(\"I \", 53, 11, 47);\n"
+    "dprintc(\"At\", 53, 12, 160);\n"
+    "dprintc(\"Ts\", 53, 13, 143);\n" // eng g18
+    "dprintc(\"He\", 55, 7, 79);\n"
+    "dprintc(\"Ne\", 55, 8, 79);\n"
+    "dprintc(\"Ar\", 55, 9, 79);\n"
+    "dprintc(\"Kr\", 55, 10, 79);\n"
+    "dprintc(\"Xe\", 55, 11, 79);\n"
+    "dprintc(\"Rn\", 55, 12, 79);\n"
+    "dprintc(\"Og\", 55, 13, 143);\n" // end g19
+    "dprintc(\"Ce\", 27, 15, 177);\n"
+    "dprintc(\"Pr\", 29, 15, 177);\n"
+    "dprintc(\"Nd\", 31, 15, 177);\n"
+    "dprintc(\"Pm\", 33, 15, 177);\n"
+    "dprintc(\"Sm\", 35, 15, 177);\n"
+    "dprintc(\"Eu\", 37, 15, 177);\n"
+    "dprintc(\"Gd\", 39, 15, 177);\n"
+    "dprintc(\"Tb\", 41, 15, 177);\n"
+    "dprintc(\"Dy\", 43, 15, 177);\n"
+    "dprintc(\"Ho\", 45, 15, 177);\n"
+    "dprintc(\"Er\", 47, 15, 177);\n"
+    "dprintc(\"Tm\", 49, 15, 177);\n"
+    "dprintc(\"Yb\", 51, 15, 177);\n"
+    "dprintc(\"Lu\", 53, 15, 177);\n" // end actinids
+    "dprintc(\"Th\", 27, 16, 111);\n"
+    "dprintc(\"Pa\", 29, 16, 111);\n"
+    "dprintc(\"U \", 31, 16, 111);\n"
+    "dprintc(\"Np\", 33, 16, 111);\n"
+    "dprintc(\"Pu\", 35, 16, 111);\n"
+    "dprintc(\"Am\", 37, 16, 111);\n"
+    "dprintc(\"Cm\", 39, 16, 111);\n"
+    "dprintc(\"Bk\", 41, 16, 111);\n"
+    "dprintc(\"Cf\", 43, 16, 111);\n"
+    "dprintc(\"Es\", 45, 16, 111);\n"
+    "dprintc(\"Fm\", 47, 16, 111);\n"
+    "dprintc(\"Md\", 49, 16, 111);\n"
+    "dprintc(\"No\", 51, 16, 111);\n"
+    "dprintc(\"Lr\", 53, 16, 111);\n" // end lanthanides
     "}";
 
-/*
-static const char* user_demo2 = 
-    "void main() {\n"
-    "vgag_box();\n"
-    "dputcharc(21, 8, 'H', 31); dputcharc(22, 8, ' ', 31);\n"
-    "dputcharc(21, 9, 'L', 159); dputcharc(22, 9, 'i', 159);\n"
-    "dputcharc(21, 10, 'N', 159); dputcharc(22, 10, 'a', 159);\n"
-    "dputcharc(21, 11, 'K', 159); dputcharc(22, 11, ' ', 159);\n"
-    "dputcharc(21, 12, 'R', 159); dputcharc(22, 12, 'b', 159);\n"
-    "dputcharc(21, 13, 'C', 159); dputcharc(22, 13, 's', 159);\n"
-    "dputcharc(21, 14, 'F', 159); dputcharc(22, 14, 'r', 159);\n" // end g1
-    "dputcharc(23, 9, 'B', 207); dputcharc(24, 9, 'e', 207);\n"
-    "dputcharc(23, 10, 'M', 207); dputcharc(24, 10, 'g', 207);\n"
-    "dputcharc(23, 11, 'C', 207); dputcharc(24, 11, 'a', 207);\n"
-    "dputcharc(23, 12, 'S', 207); dputcharc(24, 12, 'r', 207);\n"
-    "dputcharc(23, 13, 'B', 207); dputcharc(24, 13, 'a', 207);\n"
-    "dputcharc(23, 14, 'R', 207); dputcharc(24, 14, 'a', 207);\n" // end g2
-    "dputcharc(25, 11, 'S', 95); dputcharc(26, 11, 'c', 95);\n"
-    "dputcharc(25, 12, 'Y', 95); dputcharc(26, 12, ' ', 95);\n"
-    "dputcharc(25, 13, 'L', 177); dputcharc(26, 13, 'a', 177);\n"
-    "dputcharc(25, 14, 'A', 111); dputcharc(26, 14, 'c', 111);\n" // end g4
-    "dputcharc(27, 11, 'T', 95); dputcharc(28, 11, 'i', 95);\n" 
-    "dputcharc(27, 12, 'Z', 95); dputcharc(28, 12, 'r', 95);\n"
-    "dputcharc(27, 13, 'H', 95); dputcharc(28, 13, 'f', 95);\n"
-    "dputcharc(27, 14, 'R', 95); dputcharc(28, 14, 'f', 95);\n" // end g5
-    "dputcharc(29, 11, 'V', 95); dputcharc(30, 11, ' ', 95);\n"
-    "dputcharc(29, 12, 'N', 95); dputcharc(30, 12, 'b', 95);\n"
-    "dputcharc(29, 13, 'T', 95); dputcharc(30, 13, 'a', 95);\n"
-    "dputcharc(29, 14, 'D', 95); dputcharc(30, 14, 'b', 95);\n" // end g6
-    "dputcharc(31, 11, 'C', 95); dputcharc(32, 11, 'r', 95);\n"
-    "dputcharc(31, 12, 'M', 95); dputcharc(32, 12, 'o', 95);\n"
-    "dputcharc(31, 13, 'W', 95); dputcharc(32, 13, ' ', 95);\n"
-    "dputcharc(31, 14, 'S', 95); dputcharc(32, 14, 'g', 95);\n" // end g7
-    "dputcharc(33, 11, 'M', 95); dputcharc(34, 11, 'n', 95);\n"
-    "dputcharc(33, 12, 'T', 95); dputcharc(34, 12, 'c', 95);\n"
-    "dputcharc(33, 13, 'R', 95); dputcharc(34, 13, 'e', 95);\n"
-    "dputcharc(33, 14, 'B', 95); dputcharc(34, 14, 'h', 95);\n" // end g8
-    "dputcharc(35, 11, 'F', 95); dputcharc(36, 11, 'e', 95);\n"
-    "dputcharc(35, 12, 'R', 95); dputcharc(36, 12, 'u', 95);\n"
-    "dputcharc(35, 13, 'O', 95); dputcharc(36, 13, 's', 95);\n"
-    "dputcharc(35, 14, 'H', 95); dputcharc(36, 14, 's', 95);\n" // end g9
-    "dputcharc(37, 11, 'C', 95); dputcharc(38, 11, 'o', 95);\n"
-    "dputcharc(37, 12, 'R', 95); dputcharc(38, 12, 'h', 95);\n"
-    "dputcharc(37, 13, 'I', 95); dputcharc(38, 13, 'r', 95);\n"
-    "dputcharc(37, 14, 'M', 143); dputcharc(38, 14, 't', 143);\n" // end g10
-    "dputcharc(39, 11, 'N', 95); dputcharc(40, 11, 'i', 95);\n"
-    "dputcharc(39, 12, 'P', 95); dputcharc(40, 12, 'd', 95);\n"
-    "dputcharc(39, 13, 'P', 95); dputcharc(40, 13, 't', 95);\n"
-    "dputcharc(39, 14, 'D', 143); dputcharc(40, 14, 's', 143);\n" // end g11
-    "dputcharc(41, 11, 'C', 95); dputcharc(42, 11, 'u', 95);\n"
-    "dputcharc(41, 12, 'A', 95); dputcharc(42, 12, 'g', 95);\n"
-    "dputcharc(41, 13, 'A', 95); dputcharc(42, 13, 'u', 95);\n"
-    "dputcharc(41, 14, 'R', 143); dputcharc(42, 14, 'g', 143);\n" // end g12
-    "dputcharc(43, 11, 'Z', 95); dputcharc(44, 11, 'n', 95);\n"
-    "dputcharc(43, 12, 'C', 95); dputcharc(44, 12, 'd', 95);\n"
-    "dputcharc(43, 13, 'H', 95); dputcharc(44, 13, 'g', 95);\n"
-    "dputcharc(43, 14, 'C',143); dputcharc(44, 14, 'n', 143);\n" // end g13
-    "dputcharc(45, 9, 'B', 224); dputcharc(46, 9, ' ', 224);\n"
-    "dputcharc(45, 10, 'A', 160); dputcharc(46, 10, 'l', 160);\n"
-    "dputcharc(45, 11, 'G', 160); dputcharc(46, 11, 'a', 160);\n"
-    "dputcharc(45, 12, 'I', 160); dputcharc(46, 12, 'n', 160);\n"
-    "dputcharc(45, 13, 'T', 160); dputcharc(46, 13, 'i', 160);\n"
-    "dputcharc(45, 14, 'N', 143); dputcharc(46, 14, 'h', 143);\n" // end g14
-    "dputcharc(47, 9, 'C', 31); dputcharc(48, 9, ' ', 31);\n"
-    "dputcharc(47, 10, 'S', 224); dputcharc(48, 10, 'i', 224);\n"
-    "dputcharc(47, 11, 'G', 224); dputcharc(48, 11, 'e', 224);\n"
-    "dputcharc(47, 12, 'S', 160); dputcharc(48, 12, 'n', 160);\n"
-    "dputcharc(47, 13, 'P', 160); dputcharc(48, 13, 'b', 160);\n"
-    "dputcharc(47, 14, 'F', 143); dputcharc(48, 14, 'l', 143);\n" // end g15
-    "dputcharc(49, 9, 'N', 31); dputcharc(50, 9, ' ', 31);\n"
-    "dputcharc(49, 10, 'P', 31); dputcharc(50, 10, ' ', 31);\n"
-    "dputcharc(49, 11, 'A', 224); dputcharc(50, 11, 's', 224);\n"
-    "dputcharc(49, 12, 'S', 224); dputcharc(50, 12, 'b', 224);\n"
-    "dputcharc(49, 13, 'B', 160); dputcharc(50, 13, 'i', 160);\n"
-    "dputcharc(49, 14, 'M', 143); dputcharc(50, 14, 'c', 143);\n" // end g16
-    "dputcharc(51, 9, 'O', 31); dputcharc(52, 9, ' ', 31);\n"
-    "dputcharc(51, 10, 'S', 31); dputcharc(52, 10, ' ', 31);\n"
-    "dputcharc(51, 11, 'S', 31); dputcharc(52, 11, 'e', 31);\n"
-    "dputcharc(51, 12, 'T', 224); dputcharc(52, 12, 'e', 224);\n"
-    "dputcharc(51, 13, 'P', 160); dputcharc(52, 13, 'o', 160);\n"
-    "dputcharc(51, 14, 'L', 143); dputcharc(52, 14, 'v', 143);\n" // end g17
-    "dputcharc(53, 9, 'F', 31); dputcharc(54, 9, ' ', 31);\n"
-    "dputcharc(53, 10, 'C', 31); dputcharc(54, 10, 'l', 31);\n"
-    "dputcharc(53, 11, 'B', 31); dputcharc(54, 11, 'r', 31);\n"
-    "dputcharc(53, 12, 'I', 31); dputcharc(54, 12, ' ', 31);\n"
-    "dputcharc(53, 13, 'A', 160); dputcharc(54, 13, 't', 160);\n"
-    "dputcharc(53, 14, 'T', 143); dputcharc(54, 14, 's', 143);\n" // eng g18
-    "dputcharc(55, 8, 'H', 79); dputcharc(56, 8, 'e', 79);\n"
-    "dputcharc(55, 9, 'N', 79); dputcharc(56, 9, 'e', 79);\n"
-    "dputcharc(55, 10, 'A', 79); dputcharc(56, 10, 'r', 79);\n"
-    "dputcharc(55, 11, 'K', 79); dputcharc(56, 11, 'r', 79);\n"
-    "dputcharc(55, 12, 'X', 79); dputcharc(56, 12, 'e', 79);\n"
-    "dputcharc(55, 13, 'R', 79); dputcharc(56, 13, 'n', 79);\n"
-    "dputcharc(55, 14, 'O', 143); dputcharc(56, 14, 'g', 143);\n" // end 619
-    "dputcharc(27, 16, 'C', 177); dputcharc(28, 16, 'e', 177);\n" 
-    "dputcharc(29, 16, 'P', 177); dputcharc(30, 16, 'r', 177);\n" 
-    "dputcharc(31, 16, 'N', 177); dputcharc(32, 16, 'd', 177);\n" 
-    "dputcharc(33, 16, 'P', 177); dputcharc(34, 16, 'm', 177);\n" 
-    "dputcharc(35, 16, 'S', 177); dputcharc(36, 16, 'm', 177);\n" 
-    "dputcharc(37, 16, 'E', 177); dputcharc(38, 16, 'u', 177);\n" 
-    "dputcharc(39, 16, 'G', 177); dputcharc(40, 16, 'd', 177);\n" 
-    "dputcharc(41, 16, 'T', 177); dputcharc(42, 16, 'b', 177);\n"
-    "dputcharc(43, 16, 'D', 177); dputcharc(44, 16, 'y', 177);\n"  
-    "dputcharc(45, 16, 'H', 177); dputcharc(46, 16, 'o', 177);\n" 
-    "dputcharc(47, 16, 'E', 177); dputcharc(48, 16, 'r', 177);\n" 
-    "dputcharc(49, 16, 'T', 177); dputcharc(50, 16, 'm', 177);\n" 
-    "dputcharc(51, 16, 'Y', 177); dputcharc(52, 16, 'b', 177);\n" 
-    "dputcharc(53, 16, 'L', 177); dputcharc(54, 16, 'u', 177);\n" // end actinds
-    "}";
-*/
-
+    
 static int str_len(const char* str) {
     int len = 0;
     while (str[len]) len++;
@@ -252,6 +261,23 @@ static bool str_starts_with(const char* str, const char* pref) {
         if (str[i] != pref[i]) return false;
         i++;
     }
+    return true;
+}
+
+static bool str_ends_with(const char* str, const char* suff) { // don't touch things that (sometimes) work already
+    int str_len_val = str_len(str);
+    int suff_len = str_len(suff);
+
+    if (suff_len > str_len_val)
+        return false;
+
+    int start = str_len_val - suff_len;
+
+    for (int i = 0; i < suff_len; i++) {
+        if (str[start + i] != suff[i])
+            return false;
+    }
+
     return true;
 }
 
@@ -369,6 +395,10 @@ static bool normalize_path(const char* path, char* out) {
 
 static bool is_hidden_path(const char* absolute_path) {
     return streq(absolute_path, "0:\\data") || str_starts_with(absolute_path, "0:\\data\\");
+}
+
+static bool vgag_is_hidden_path(const char* absolute_path) {
+    return (str_ends_with(absolute_path, ".c"));
 }
 
 static bool format_name_83(const char* component, char out[11]) {
@@ -688,13 +718,18 @@ static void fs_format_fat16() {
     bs.reserved_sector_count = FS_RESERVED_SECTORS;
     bs.num_fats = FS_NUM_FATS;
     bs.root_entry_count = FS_ROOT_ENTRIES;
-    bs.total_sectors_16 = 0;
+    if (FS_TOTAL_SECTORS <= 0xFFFF) {
+        bs.total_sectors_16 = (uint16_t)FS_TOTAL_SECTORS;
+        bs.total_sectors_32 = 0;
+    } else {
+        bs.total_sectors_16 = 0;
+        bs.total_sectors_32 = FS_TOTAL_SECTORS;
+    }
     bs.media = 0xF8;
     bs.fat_size_16 = FS_SECTORS_PER_FAT;
     bs.sectors_per_track = 63;
     bs.num_heads = 16;
     bs.hidden_sectors = 0;
-    bs.total_sectors_32 = FS_TOTAL_SECTORS;
     bs.drive_number = 0x80;
     bs.boot_signature = 0x29;
     bs.volume_id = 0x4D4D5301;
@@ -748,7 +783,8 @@ void vfs_init() {
                  (bs->num_fats == FS_NUM_FATS) &&
                  (bs->fat_size_16 == FS_SECTORS_PER_FAT) &&
                  (bs->root_entry_count == FS_ROOT_ENTRIES) &&
-                 (bs->total_sectors_32 == FS_TOTAL_SECTORS);
+                 (((FS_TOTAL_SECTORS <= 0xFFFF) && (bs->total_sectors_16 == FS_TOTAL_SECTORS) && (bs->total_sectors_32 == 0)) ||
+                  ((FS_TOTAL_SECTORS > 0xFFFF) && (bs->total_sectors_16 == 0) && (bs->total_sectors_32 == FS_TOTAL_SECTORS)));
 
     if (!valid) {
         println("Formatting drive...");
@@ -967,12 +1003,21 @@ void vfs_list_current_dir() {
         if (is_hidden_path(full)) continue;
 
         if (e.attr & ATTR_DIRECTORY) print("[DIR] ");
+        else if (str_ends_with(disp, ".tbc")) print("[EXEC] ");
+        else if (str_ends_with(disp, ".c")) print("[PRGM] ");
         else print("[FILE] ");
         print(disp);
         if (!(e.attr & ATTR_DIRECTORY)) {
-            print(" (");
-            printint((int)e.file_size);
-            print(" bytes)");
+            if ((int)e.file_size > 999) {
+                print(" (");
+                printfloat(((float)e.file_size/1000));
+                print(" kb)");
+            }
+            else {
+                print(" (");
+                printint((int)e.file_size);
+                print(" bytes)");
+            }
         }
         putchar('\n');
         empty = false;
@@ -993,8 +1038,8 @@ void vfs_list_current_dir() {
 void vgag_list_current_dir() {
     cd("0:\\vgag");
     dcX = 11; dcY = 6;
-    dprintc(cwd_path, 0x70); dcY++; dcX = 11;
-    dprintmultc(0xCD, 7, 0x70);
+    dprintc(cwd_path, 0x70); dcY++; dcX = 10;
+    dputcharc(0xCC, 0x70); dprintmultc(0xCD, 8, 0x70); dputcharc(0xBE, 0x70);
     bool empty = true;
     int count = 1;
 
@@ -1024,15 +1069,22 @@ void vgag_list_current_dir() {
             str_cpy(full + p, disp);
         }
 
-        if (is_hidden_path(full)) continue;
+        if (vgag_is_hidden_path(disp)) continue;
 
-        if (e.attr & ATTR_DIRECTORY) {dprintintc(count, 0x70); dprintc(" [DIR] ", 0x70);} 
-        else {dprintintc(count, 0x70); dprintc(" [FILE] ", 0x70);}
+        if (e.attr & ATTR_DIRECTORY) {dprintc("  ", 0x70); dprintintc(count, 0x70); dprintc(".", 0x70); dprintc(" [DIR] ", 0x70);} 
+        else {dprintc("  ", 0x70); dprintintc(count, 0x70); dprintc(".", 0x70); dprintc(" [PRGM] ", 0x70);}
         dprintc(disp, 0x70);
         if (!(e.attr & ATTR_DIRECTORY)) {
-            dprintc(" (", 0x70);
-            dprintintc((int)e.file_size, 0x70);
-            dprintc(" bytes)", 0x70);
+            if ((int)e.file_size > 999) {
+                dprintc(" (", 0x70);
+                dprintfloatc(((float)e.file_size/1000), 0x70);
+                dprintc(" kb)", 0x70);
+            }
+            else {
+                dprintc(" (", 0x70);
+                dprintintc((int)e.file_size, 0x70);
+                dprintc(" bytes)", 0x70);
+            }
         }
         dcX = 11; dcY++;
         count++;
