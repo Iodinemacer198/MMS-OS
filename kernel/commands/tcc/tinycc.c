@@ -157,7 +157,7 @@ void printtimeindex() {
 #define TCC_CODE_MAX 512
 #define TCC_NAME_MAX 16
 #define TCC_ERROR_MAX 96
-#define TCC_LINE_MAX 256
+#define TCC_LINE_MAX 128
 
 typedef enum {
     OP_CONST,
@@ -1322,9 +1322,9 @@ static void tiny_make_output_path(const char* src_path, char* out_path) {
 
 void run_tcc_build(char* src_path) {
     char out_path[TCC_INPUT_MAX] = "";
-    static char source[TCC_SOURCE_MAX];
-    static char program[TCC_OUTPUT_MAX];
-    static char error[TCC_ERROR_MAX];
+    char source[TCC_SOURCE_MAX];
+    char program[TCC_OUTPUT_MAX];
+    char error[TCC_ERROR_MAX];
 
     if (!vfs_read_file(src_path, source)) {
         print("Error: ");
@@ -1354,9 +1354,9 @@ void run_tcc_build(char* src_path) {
 
 void discrete_run_tcc_build(char* src_path) {
     char out_path[TCC_INPUT_MAX] = "";
-    static char source[TCC_SOURCE_MAX];
-    static char program[TCC_OUTPUT_MAX];
-    static char error[TCC_ERROR_MAX];
+    char source[TCC_SOURCE_MAX];
+    char program[TCC_OUTPUT_MAX];
+    char error[TCC_ERROR_MAX];
 
     if (!vfs_read_file(src_path, source)) {
         dcX = 0; dcY = 23;
@@ -1383,7 +1383,7 @@ void discrete_run_tcc_build(char* src_path) {
 }
 
 void run_tcc_exec(char* program_path) {
-    static char program[TCC_OUTPUT_MAX];
+    char program[TCC_OUTPUT_MAX];
     int exit_code = 0;
 
     if (!vfs_read_file(program_path, program)) {

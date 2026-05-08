@@ -30,7 +30,7 @@ extern int cursorX;
 #define FS_TOTAL_SECTORS 204800 /* 100 MiB raw disk */
 #define FS_RESERVED_SECTORS 1
 #define FS_NUM_FATS 2
-#define FS_ROOT_ENTRIES 512
+#define FS_ROOT_ENTRIES 128
 #define FS_ROOT_DIR_SECTORS ((FS_ROOT_ENTRIES * 32 + (SECTOR_SIZE - 1)) / SECTOR_SIZE)
 #define FS_SECTORS_PER_FAT 794
 #define FS_SECTORS_PER_CLUSTER 1
@@ -40,7 +40,7 @@ extern int cursorX;
 
 #define DATA_START_LBA (FS_BASE_LBA + FS_RESERVED_SECTORS + (FS_NUM_FATS * FS_SECTORS_PER_FAT) + FS_ROOT_DIR_SECTORS)
 #define ROOT_DIR_LBA (FS_BASE_LBA + FS_RESERVED_SECTORS + (FS_NUM_FATS * FS_SECTORS_PER_FAT))
-#define TOTAL_CLUSTERS ((FS_TOTAL_SECTORS - FS_RESERVED_SECTORS - (FS_NUM_FATS * FS_SECTORS_PER_FAT) - FS_ROOT_DIR_SECTORS) / FS_SECTORS_PER_CLUSTER)
+#define TOTAL_CLUSTERS (FS_TOTAL_SECTORS - FS_RESERVED_SECTORS - (FS_NUM_FATS * FS_SECTORS_PER_FAT) - FS_ROOT_DIR_SECTORS)
 #define FAT_ENTRY_COUNT (TOTAL_CLUSTERS + 2)
 
 #define ATTR_DIRECTORY 0x10
@@ -107,7 +107,7 @@ static const char* default_demo_source =
     "return answer;\n"
     "}";
 
-static const char* user_demo2 = 
+static const char* user_demo = 
     "void main() {\n"
     "vgag_box();\n"
     "dprintc(\"H \", 21, 7, 31);\n"
@@ -471,9 +471,8 @@ static bool read_dir_entry(uint16_t dir_cluster, int index, FatDirEntry* out) {
     max_entries = (SECTOR_SIZE * FS_SECTORS_PER_CLUSTER) / 32;
     if (index < 0 || index >= max_entries) return false;
 
-    int sec = index / 16;
-    int off = (index % 16) * 32;
-    read_sector(cluster_to_lba(dir_cluster) + sec, sector_buffer);
+    read_sector(cluster_to_lba(dir_cluster), sector_buffer);
+    int off = index * 32;
     for (int i = 0; i < 32; i++) ((uint8_t*)out)[i] = sector_buffer[off + i];
     return true;
 }
@@ -498,11 +497,10 @@ static bool write_dir_entry(uint16_t dir_cluster, int index, const FatDirEntry* 
     max_entries = (SECTOR_SIZE * FS_SECTORS_PER_CLUSTER) / 32;
     if (index < 0 || index >= max_entries) return false;
 
-    int sec = index / 16;
-    int off = (index % 16) * 32;
-    read_sector(cluster_to_lba(dir_cluster) + sec, sector_buffer);
+    read_sector(cluster_to_lba(dir_cluster), sector_buffer);
+    int off = index * 32;
     for (int i = 0; i < 32; i++) sector_buffer[off + i] = ((const uint8_t*)in)[i];
-    ata_write_sector(cluster_to_lba(dir_cluster) + sec, sector_buffer);
+    ata_write_sector(cluster_to_lba(dir_cluster), sector_buffer);
     return true;
 }
 
@@ -542,10 +540,7 @@ static uint16_t fat_alloc_cluster() {
         if (fat[c] == FAT16_FREE) {
             fat[c] = FAT16_EOC;
             mem_zero(sector_buffer, SECTOR_SIZE);
-            uint32_t lba = cluster_to_lba(c);
-            for (int sec = 0; sec < FS_SECTORS_PER_CLUSTER; sec++) {
-                ata_write_sector(lba + sec, sector_buffer);
-            }
+            ata_write_sector(cluster_to_lba(c), sector_buffer);
             return c;
         }
     }
@@ -657,13 +652,10 @@ static bool write_chain_data(uint16_t first_cluster, const char* data, int size)
     int offset = 0;
 
     while (cur >= 2 && cur < FAT_ENTRY_COUNT) {
-        uint32_t cluster_lba = cluster_to_lba(cur);
-        for (int sec = 0; sec < FS_SECTORS_PER_CLUSTER; sec++) {
-            for (int i = 0; i < SECTOR_SIZE; i++) {
-                sector_buffer[i] = (offset < size) ? (uint8_t)data[offset++] : 0;
-            }
-            ata_write_sector(cluster_lba + sec, sector_buffer);
+        for (int i = 0; i < SECTOR_SIZE; i++) {
+            sector_buffer[i] = (offset < size) ? (uint8_t)data[offset++] : 0;
         }
+        ata_write_sector(cluster_to_lba(cur), sector_buffer);
 
         if (fat[cur] == FAT16_EOC) break;
         cur = fat[cur];
@@ -677,11 +669,8 @@ static bool read_chain_data(uint16_t first_cluster, char* out, int size) {
     int offset = 0;
 
     while (cur >= 2 && cur < FAT_ENTRY_COUNT && offset < size) {
-        uint32_t cluster_lba = cluster_to_lba(cur);
-        for (int sec = 0; sec < FS_SECTORS_PER_CLUSTER && offset < size; sec++) {
-            ata_read_sector(cluster_lba + sec, sector_buffer);
-            for (int i = 0; i < SECTOR_SIZE && offset < size; i++) out[offset++] = (char)sector_buffer[i];
-        }
+        ata_read_sector(cluster_to_lba(cur), sector_buffer);
+        for (int i = 0; i < SECTOR_SIZE && offset < size; i++) out[offset++] = (char)sector_buffer[i];
 
         if (fat[cur] == FAT16_EOC) break;
         cur = fat[cur];
@@ -752,7 +741,7 @@ static void fs_format_fat16() {
 }
 
 static void vfs_seed_defaults() {
-    static char read_buffer[FILE_BUFFER_LIMIT + 1];
+    char read_buffer[FILE_BUFFER_LIMIT + 1];
 
     vfs_make_dir("0:\\data");
 
@@ -767,9 +756,9 @@ static void vfs_seed_defaults() {
         vfs_make_dir("0:\\programs");
         vfs_write_file("0:\\programs\\demo.c", default_demo_source);
     }
-    if (!vfs_read_file("0:\\vgag\\periodic.c", read_buffer) || !streq(read_buffer, user_demo2)) {
+    if (!vfs_read_file("0:\\vgag\\periodic.c", read_buffer) || !streq(read_buffer, user_demo)) {
         vfs_make_dir("0:\\vgag");
-        vfs_write_file("0:\\vgag\\periodic.c", user_demo2);
+        vfs_write_file("0:\\vgag\\periodic.c", user_demo);
     }
 }
 
@@ -846,12 +835,7 @@ bool vfs_make_dir(const char* path) {
     items[1].attr = ATTR_DIRECTORY;
     dir_entry_set_cluster(&items[1], parent == ROOT_CLUSTER ? 0 : parent);
 
-    uint32_t dir_lba = cluster_to_lba(new_cluster);
-    ata_write_sector(dir_lba, sector_buffer);
-    mem_zero(sector_buffer, SECTOR_SIZE);
-    for (int sec = 1; sec < FS_SECTORS_PER_CLUSTER; sec++) {
-        ata_write_sector(dir_lba + sec, sector_buffer);
-    }
+    ata_write_sector(cluster_to_lba(new_cluster), sector_buffer);
     fat_flush();
 
     return true;
@@ -923,8 +907,7 @@ bool vfs_write_file(const char* path, const char* data) {
 
     uint16_t first = FAT16_FREE;
     if (len > 0) {
-        int cluster_bytes = SECTOR_SIZE * FS_SECTORS_PER_CLUSTER;
-        int clusters = (len + cluster_bytes - 1) / cluster_bytes;
+        int clusters = (len + SECTOR_SIZE - 1) / SECTOR_SIZE;
         first = fat_alloc_chain(clusters);
         if (first == FAT16_FREE) return false;
         write_chain_data(first, data, len);
