@@ -31,10 +31,14 @@ extern void run_tcc_build(char* src_path);
 extern void run_tcc_exec(char* program_path);
 extern void discrete_run_tcc_build(char* src_path);
 extern void vgag_list_current_dir();
+extern void vgag_execute(int f3i);
+extern void vfs_get_cwd(char* out);
 
 extern uint16_t* vga;
 extern int cursorX;
 extern int cursorY;
+
+char* out;
 
 int dcX;
 int dcY;
@@ -1188,15 +1192,29 @@ void f2_clear() {
 }
 
 void old_vgag_f3() {
-    cd("0:\\vgag");
     discrete_run_tcc_build("periodic.c");
     run_tcc_exec("periodic.tbc");
 }
+
+int f3i = 0;
 
 void vgag_f3() {
     vgag_scblue();
     vgag_box();
     vgag_list_current_dir();
+    dcX = 11; dcY = 8+f3i;
+    dputcharc('>', 0x70);
+}
+
+void f3_arrows() {
+    dcX = 11; dcY = 8;
+    while (dcY < 19) {
+        dputcharc(0xDB, 0x77);
+        dcY++;
+        dcX = 11;
+    } 
+    dcX = 11; dcY = 8+f3i;
+    dputcharc('>', 0x70);
 }
 
 float abs(float input) {
@@ -1234,6 +1252,7 @@ void debug() {
     dprintintc(g, 0x17); dcX++;
     dprintintc(e, 0x17); dcX++;
     dprintintc(h, 0x17); dcX++;
+    dprintintc(f3i, 0x17); dcX++;
 }
 
 int last_dcX = 0;
@@ -1291,6 +1310,8 @@ void vgag_run() {
             continue;
         }
         else if (key == 27) {
+            //vfs_get_cwd(out);
+            //if (strcmp(out, ))
             cd("..");
             running = false;
         }
@@ -1298,6 +1319,8 @@ void vgag_run() {
             vgag_scblue();
             vgag_intro();
             f1_open = false;
+            f2_open = false;
+            f3_open = false;
         }
         else if (key == 128) {
             cursorX = 11; cursorY = 6;
@@ -1318,6 +1341,7 @@ void vgag_run() {
             vgag_f1();
             f1_open = true;
             f2_open = false;
+            f3_open = false;
             calc_reset();
         }
         else if (key == 129) {
@@ -1339,6 +1363,7 @@ void vgag_run() {
             vgag_f2();
             f2_open = true;
             f1_open = false;
+            f3_open = false;
         }
         else if (key == 130) {
             dcX = 0; dcY = 0;
@@ -1591,7 +1616,15 @@ void vgag_run() {
             }
             else if (f3_open == true) {
                 if (key == '\n') {
-                    old_vgag_f3();
+                    vgag_execute(f3i);
+                }
+                else if (key == 140) {
+                    if (f3i == 0) continue;
+                    else {f3i--; f3_arrows();}
+                }
+                else if (key == 141) {
+                    if (f3i == 10) continue;
+                    else {f3i++; f3_arrows();}
                 }
             }
             else {

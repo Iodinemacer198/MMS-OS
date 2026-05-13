@@ -137,7 +137,7 @@ void read(char* path) {
 
     path_prepend(path);
 
-    char read_buffer[512];
+    char read_buffer[8092];
     if (vfs_read_file(path, read_buffer)) {
         println(read_buffer);
     }

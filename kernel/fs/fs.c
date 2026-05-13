@@ -17,6 +17,7 @@ extern void cd(const char* path);
 extern void dprintmultc(unsigned char c, int l, uint8_t color);
 extern void dprintfloatc(float num, uint8_t color);
 extern void printfloat(float num);
+extern void tcc_b_e(char* src_path);
 
 extern int dcX;
 extern int dcY;
@@ -230,6 +231,17 @@ static const char* user_demo =
     "dprintc(\"Lr\", 53, 16, 111);\n" // end lanthanides
     "}";
 
+static const char* user_demo2 = 
+    "void main() {\n"
+    "vgag_box();\n"
+    "dprintc(\"Hello MMS-OS users!\", 11, 6, 112);\n"
+    "dprintc(\"  \", 11, 8, 79);\n"
+    "dprintc(\"  \", 13, 8, 111);\n"
+    "dprintc(\"  \", 15, 8, 224);\n"
+    "dprintc(\"  \", 17, 8, 47);\n"
+    "dprintc(\"  \", 19, 8, 31);\n"
+    "dprintc(\"  \", 13, 8, 95);\n"
+    "}";
     
 static int str_len(const char* str) {
     int len = 0;
@@ -743,11 +755,13 @@ static void fs_format_fat16() {
 static void vfs_seed_defaults() {
     char read_buffer[FILE_BUFFER_LIMIT + 1];
 
-    vfs_make_dir("0:\\data");
-
     if (!vfs_read_file("0:\\test.txt", read_buffer)) {
         vfs_write_file("0:\\test.txt", "Hello, curious user!");
     }
+
+    vfs_make_dir("0:\\data");
+    vfs_make_dir("0:\\vgag");
+
     if (!vfs_read_file("0:\\music\\ode.md", read_buffer)) {
         vfs_make_dir("0:\\music");
         vfs_write_file("0:\\music\\ode.md", "370 400\n370 400\n392 400\n440 400\n440 400\n392 400\n370 400\n330 400\n294 400\n294 400\n330 400\n370 400\n370 600\n330 200\n330 800");
@@ -757,8 +771,10 @@ static void vfs_seed_defaults() {
         vfs_write_file("0:\\programs\\demo.c", default_demo_source);
     }
     if (!vfs_read_file("0:\\vgag\\periodic.c", read_buffer) || !streq(read_buffer, user_demo)) {
-        vfs_make_dir("0:\\vgag");
         vfs_write_file("0:\\vgag\\periodic.c", user_demo);
+    }
+    if (!vfs_read_file("0:\\vgag\\test.c", read_buffer) || !streq(read_buffer, user_demo2)) {
+        vfs_write_file("0:\\vgag\\test.c", user_demo2);
     }
 }
 
@@ -1052,10 +1068,10 @@ void vgag_list_current_dir() {
             str_cpy(full + p, disp);
         }
 
-        if (vgag_is_hidden_path(disp)) continue;
+        if (!vgag_is_hidden_path(disp)) continue;
 
-        if (e.attr & ATTR_DIRECTORY) {dprintc("  ", 0x70); dprintintc(count, 0x70); dprintc(".", 0x70); dprintc(" [DIR] ", 0x70);} 
-        else {dprintc("  ", 0x70); dprintintc(count, 0x70); dprintc(".", 0x70); dprintc(" [PRGM] ", 0x70);}
+        if (e.attr & ATTR_DIRECTORY) {dprintc("  [DIR] ", 0x70);} 
+        else {dprintc("  [PRGM] ", 0x70);}
         dprintc(disp, 0x70);
         if (!(e.attr & ATTR_DIRECTORY)) {
             if ((int)e.file_size > 999) {
@@ -1074,7 +1090,52 @@ void vgag_list_current_dir() {
         empty = false;
     }
 
-    if (empty) dprintc("(empty)", 0x70);
+    if (empty) dprintc("  (empty)", 0x70);
+}
+
+void vgag_execute(int p) {
+    int max_entries = (cwd_cluster == ROOT_CLUSTER) ? FS_ROOT_ENTRIES : ((SECTOR_SIZE * FS_SECTORS_PER_CLUSTER) / 32);
+
+    int checknum = 0;
+
+    for (int i = 0; i < max_entries; i++) {
+        checknum++;
+        FatDirEntry e;
+        if (!read_dir_entry(cwd_cluster, i, &e)) break;
+        if ((uint8_t)e.name[0] == 0x00 || (uint8_t)e.name[0] == 0xE5) continue;
+        if (e.attr == 0x0F) continue;
+
+        char disp[20];
+        name83_to_display(e.name, disp);
+
+        if (streq(disp, ".") || streq(disp, "..")) continue;
+
+        char full[MAX_PATH_LEN];
+        if (streq(cwd_path, "0:\\")) {
+            str_cpy(full, "0:\\");
+            str_cpy(full + 3, disp);
+        } else {
+            str_cpy(full, cwd_path);
+            int p = str_len(full);
+            full[p++] = '\\';
+            str_cpy(full + p, disp);
+        }
+
+        if (!vgag_is_hidden_path(disp)) {
+            checknum--;
+            continue;
+        }
+
+        if ((checknum-3) == p) {
+            //dcX = 0; dcY = 22;
+            //dprintc(disp, 0x17);
+            tcc_b_e(disp);
+            break;
+        }
+        else {
+            continue;
+        }
+    }
 }
 
 void vfs_list_files() {
@@ -1177,6 +1238,8 @@ void vfs_reset() {
     }
 
     if (streq(ans, "y")) {
+        putchar('\n');
+        print("Starting reset...");
         fs_format_fat16();
         fat_load();
         str_cpy(cwd_path, "0:\\");

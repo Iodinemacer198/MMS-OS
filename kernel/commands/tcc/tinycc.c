@@ -1349,7 +1349,7 @@ void run_tcc_build(char* src_path) {
     print(src_path);
     print(" -> ");
     print(out_path);
-    //putchar('\n');
+    putchar('\n');
 }
 
 void discrete_run_tcc_build(char* src_path) {
@@ -1400,4 +1400,54 @@ void run_tcc_exec(char* program_path) {
         //printint(exit_code);
         //putchar('\n');
     }
+}
+
+void tcc_b_e(char* src_path) {
+    char out_path[TCC_INPUT_MAX] = "";
+    char source[TCC_SOURCE_MAX];
+    char program[TCC_OUTPUT_MAX];
+    char error[TCC_ERROR_MAX];
+
+    if (!vfs_read_file(src_path, source)) {
+        dcX = 0; dcY = 23;
+        dprintc("Error: ", 0x17);
+        dprintc(src_path, 0x17);
+        dprintc(" not found.", 0x17);
+        return;
+    }
+
+    //dcX = 0; dcY = 0;
+    //dprintc(source, 0x70);
+
+    if (!tiny_compile_to_text(source, program, error)) {
+        dcX = 0; dcY = 23;
+        dprintc("Compile error: ", 0x17);
+        dprintc(error, 0x17);
+        return;
+    }
+
+    tiny_make_output_path(src_path, out_path);
+    if (!vfs_write_file(out_path, program)) {
+        dcX = 0; dcY = 23;
+        dprintc("Error: could not save compiled output.", 0x17);
+        return;
+    }
+
+    int exit_code = 0;
+
+    if (!vfs_read_file(out_path, program)) {
+        dcX = 0; dcY = 24;
+        dprintc("Error: ", 0x17);
+        dprintc(out_path, 0x17);
+        dprintc(" not found.", 0x17);
+        return;
+    }
+
+    if (tiny_execute_program(program, &exit_code)) {
+        //putchar('\n');
+        //print("Program exited with code ");
+        //printint(exit_code);
+        //putchar('\n');
+    }
+
 }
