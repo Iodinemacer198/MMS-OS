@@ -33,6 +33,8 @@ extern void discrete_run_tcc_build(char* src_path);
 extern void vgag_list_current_dir();
 extern void vgag_execute(int f3i);
 extern void vfs_get_cwd(char* out);
+extern void vgag_ls();
+extern void vgag_cd();
 
 extern uint16_t* vga;
 extern int cursorX;
@@ -989,6 +991,8 @@ void vgag_taskbar() {
     dprintc("F2", 0x70);
     dprintmultc(0xDB, 2, 0x7);
     dprintc("F3", 0x70);
+    dprintmultc(0xDB, 2, 0x7);
+    dprintc("F4", 0x70);
     dcX = 0; dcY = 1;
     dprintmultc(0xDF, 80, 0x10); 
     vgag_time();
@@ -1011,6 +1015,8 @@ void vgag_intro() {
     dprintc("F2", 0x70);
     dprintmultc(0xDB, 2, 0x7);
     dprintc("F3", 0x70);
+    dprintmultc(0xDB, 2, 0x7);
+    dprintc("F4", 0x70);
 }
 
 void vgag_about() {
@@ -1197,6 +1203,7 @@ void old_vgag_f3() {
 }
 
 int f3i = 0;
+int f4i = 0;
 
 void vgag_f3() {
     vgag_scblue();
@@ -1214,6 +1221,29 @@ void f3_arrows() {
         dcX = 11;
     } 
     dcX = 11; dcY = 8+f3i;
+    dputcharc('>', 0x70);
+}
+
+void vgag_f4() {
+    vgag_scblue();
+    vgag_bigbox();
+    vgag_ls();
+    dcX = 7; dcY = 6+f4i;
+    dputcharc('>', 0x70);
+    dcX = 7; dcY = 21;
+    dprintc("  ", 0x70);
+    dputcharc(0x1e, 0x70);
+    dprintc(" Return to root", 0x70);
+}
+
+void f4_arrows() {
+    dcX = 7; dcY = 6;
+    while (dcY < 22) {
+        dputcharc(0xDB, 0x77);
+        dcY++;
+        dcX = 7;
+    } 
+    dcX = 7; dcY = 6+f4i;
     dputcharc('>', 0x70);
 }
 
@@ -1239,6 +1269,7 @@ int history_y = 7;
 bool f1_open = false;
 bool f2_open = false;
 bool f3_open = false;
+bool f4_open = false;
 
 void debug() {
     dcX = 0; dcY = 24;
@@ -1321,6 +1352,7 @@ void vgag_run() {
             f1_open = false;
             f2_open = false;
             f3_open = false;
+            f4_open = false;
         }
         else if (key == 128) {
             cursorX = 11; cursorY = 6;
@@ -1335,6 +1367,8 @@ void vgag_run() {
             dprintc("F2", 0x70);
             dprintmultc(0xDB, 2, 0x7);
             dprintc("F3", 0x70);
+            dprintmultc(0xDB, 2, 0x7);
+            dprintc("F4", 0x70);
             dprintmultc(0xDB, 1, 0x7);
             fclick++;
             if (fclick == 1) vgag_bb();
@@ -1342,6 +1376,7 @@ void vgag_run() {
             f1_open = true;
             f2_open = false;
             f3_open = false;
+            f4_open = false;
             calc_reset();
         }
         else if (key == 129) {
@@ -1358,12 +1393,16 @@ void vgag_run() {
             dprintmultc(0xDB, 1, 0x7);
             dprintc("F3", 0x70);
             dprintmultc(0xDB, 1, 0x7);
+            dprintmultc(0xDB, 1, 0x7);
+            dprintc("F4", 0x70);
+            dprintmultc(0xDB, 1, 0x7);
             fclick++;
             if (fclick == 1) vgag_bb();
             vgag_f2();
             f2_open = true;
             f1_open = false;
             f3_open = false;
+            f4_open = false;
         }
         else if (key == 130) {
             dcX = 0; dcY = 0;
@@ -1379,12 +1418,40 @@ void vgag_run() {
             dprintc("F3", 0x8F);
             dprintmultc(0xDB, 1, 0x8);
             dprintmultc(0xDB, 1, 0x7);
+            dprintc("F4", 0x70);
+            dprintmultc(0xDB, 1, 0x7);
             fclick++;
             if (fclick == 1) vgag_bb();
             vgag_f3();
             f1_open = false;
             f2_open = false;
             f3_open = true;
+            f4_open = false;
+        }
+        else if (key == 131) {
+            dcX = 0; dcY = 0;
+            dputcharc(0xDB, 0x7);
+            dputcharc(0xF0, 0x70);
+            dputcharc(0xDB, 0x7);
+            dprintmultc(0xDB, 1, 0x7);
+            dprintc("F1", 0x70);
+            dprintmultc(0xDB, 2, 0x7);
+            dprintc("F2", 0x70);
+            dprintmultc(0xDB, 1, 0x7);
+            dputcharc(0xDB, 0x7);
+            dprintc("F3", 0x70);
+            dprintmultc(0xDB, 1, 0x7);
+            dprintmultc(0xDB, 1, 0x8);
+            dprintc("F4", 0x8F);
+            dprintmultc(0xDB, 1, 0x8);
+            fclick++;
+            if (fclick == 1) vgag_bb();
+            cd("..");
+            vgag_f4();
+            f1_open = false;
+            f2_open = false;
+            f3_open = false;
+            f4_open = true;
         }
         else {
             if (f1_open == true) {   
@@ -1625,6 +1692,21 @@ void vgag_run() {
                 else if (key == 141) {
                     if (f3i == 10) continue;
                     else {f3i++; f3_arrows();}
+                }
+            }
+            else if (f4_open == true) {
+                if (key == '\n') {
+                    vgag_cd(f4i);
+                    f4i = 0;
+                    f4_arrows();
+                }
+                else if (key == 140) {
+                    if (f4i == 0) continue;
+                    else {f4i--; f4_arrows();}
+                }
+                else if (key == 141) {
+                    if (f4i == 15) continue;
+                    else {f4i++; f4_arrows();}
                 }
             }
             else {

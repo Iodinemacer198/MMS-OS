@@ -18,6 +18,8 @@ extern void dprintmultc(unsigned char c, int l, uint8_t color);
 extern void dprintfloatc(float num, uint8_t color);
 extern void printfloat(float num);
 extern void tcc_b_e(char* src_path);
+extern void vgag_f4();
+extern void f4_arrows();
 
 extern int dcX;
 extern int dcY;
@@ -1255,3 +1257,116 @@ void vfs_reset() {
         println("");
     }
 }
+
+void vgag_ls() {
+    //cd("..");
+    int i = 14;
+    int p = 0;
+    while (i < 128 && cwd_path[p] != '\0') {
+        i++; p++;
+    }
+    putchar('\n');
+    dcX = 7; dcY = 4;
+    dprintc(cwd_path, 0x70); dcY++; dcX = 6;
+    dputcharc(0xCC, 0x70); dprintmultc(0xCD, p, 0x70); dputcharc(0xBE, 0x70);
+    bool empty = true;
+
+    dcX = 7; dcY = 6;
+
+    int max_entries = (cwd_cluster == ROOT_CLUSTER) ? FS_ROOT_ENTRIES : ((SECTOR_SIZE * FS_SECTORS_PER_CLUSTER) / 32);
+
+    for (int i = 0; i < max_entries; i++) {
+        FatDirEntry e;
+        if (!read_dir_entry(cwd_cluster, i, &e)) break;
+        if ((uint8_t)e.name[0] == 0x00 || (uint8_t)e.name[0] == 0xE5) continue;
+        if (e.attr == 0x0F) continue;
+
+        char disp[20];
+        name83_to_display(e.name, disp);
+
+        if (streq(disp, ".") || streq(disp, "..")) continue;
+
+        char full[MAX_PATH_LEN];
+        if (streq(cwd_path, "0:\\")) {
+            str_cpy(full, "0:\\");
+            str_cpy(full + 3, disp);
+        } else {
+            str_cpy(full, cwd_path);
+            int p = str_len(full);
+            full[p++] = '\\';
+            str_cpy(full + p, disp);
+        }
+
+        if (is_hidden_path(full)) continue;
+
+        if (e.attr & ATTR_DIRECTORY) dprintc("  [DIR] ", 0x70);
+        else if (str_ends_with(disp, ".tbc")) dprintc("  [EXEC] ", 0x70);
+        else if (str_ends_with(disp, ".c")) dprintc("  [PRGM] ", 0x70);
+        else dprintc("  [FILE] ", 0x70);
+        dprintc(disp, 0x70);
+        if (!(e.attr & ATTR_DIRECTORY)) {
+            if ((int)e.file_size > 999) {
+                dprintc(" (", 0x70);
+                dprintfloatc(((float)e.file_size/1000), 0x70);
+                dprintc(" kb)", 0x70);
+            }
+            else {
+                dprintc(" (", 0x70);
+                dprintintc((int)e.file_size, 0x70);
+                dprintc(" bytes)", 0x70);
+            }
+        }
+        dcX = 7; dcY++;
+        //count++;
+        empty = false;
+    }
+
+    if (empty) dprintc("  (empty)", 0x70);
+}
+
+void vgag_cd(int p) {
+    int max_entries = (cwd_cluster == ROOT_CLUSTER) ? FS_ROOT_ENTRIES : ((SECTOR_SIZE * FS_SECTORS_PER_CLUSTER) / 32);
+
+    if (p == 15) {
+        cd("..");
+        vgag_f4();
+        f4_arrows();
+        return;
+    }
+
+    //int checknum = 0;
+
+    for (int i = 0; i < max_entries; i++) {
+        FatDirEntry e;
+        if (!read_dir_entry(cwd_cluster, i, &e)) break;
+        if ((uint8_t)e.name[0] == 0x00 || (uint8_t)e.name[0] == 0xE5) continue;
+        if (e.attr == 0x0F) continue;
+
+        char disp[20];
+        name83_to_display(e.name, disp);
+
+        if (streq(disp, ".") || streq(disp, "..")) continue;
+
+        char full[MAX_PATH_LEN];
+        if (streq(cwd_path, "0:\\")) {
+            str_cpy(full, "0:\\");
+            str_cpy(full + 3, disp);
+        } else {
+            str_cpy(full, cwd_path);
+            int p = str_len(full);
+            full[p++] = '\\';
+            str_cpy(full + p, disp);
+        }
+
+        if ((i-1 == p) && (e.attr & ATTR_DIRECTORY)) {
+            cd(disp);
+            vgag_f4();
+            f4_arrows();
+            break;
+        }
+        else {
+            continue;
+        }
+    }
+}
+

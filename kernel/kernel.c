@@ -475,7 +475,8 @@ char get_key() {
     switch (scancode) {
         case 0x3B: return 128;
         case 0x3C: return 129; 
-        case 0x3D: return 130; 
+        case 0x3D: return 130;
+        case 0x3E: return 131; 
     }
 
     if (scancode > 57)
