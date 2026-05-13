@@ -699,9 +699,9 @@ void vgag_login() {
         dprintc("Successfully registered!", 0x72);
         sleep(20000);
         vgag_box();
-        dcX = 12; dcY = 10;
-        dprintc("Would you like to auto boot to shell (favored), or VGAG?", 0x70); dcX = 20; dcY = 12;
-        dprintc("Press 1 for shell;      Press 2 for VGAG", 0x70); dcX = 18; dcY = 14;
+        dcX = 12; dcY = 9;
+        dprintc("Would you like to auto boot to shell (favored), or VGAG?", 0x70); dcX = 20; dcY = 11;
+        dprintc("Press 1 for shell       Press 2 for VGAG", 0x70); dcX = 18; dcY = 13;
         dprintc("This can be changed at any time in settings.", 0x70);
         bool default_running = true;
         while (default_running) {
