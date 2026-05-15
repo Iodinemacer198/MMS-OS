@@ -20,6 +20,9 @@ extern void printfloat(float num);
 extern void tcc_b_e(char* src_path);
 extern void vgag_f4();
 extern void f4_arrows();
+extern void vgag_read(char* path);
+extern void dprintfloatcr(float num, uint8_t color);
+extern void f4_reset();
 
 extern int dcX;
 extern int dcY;
@@ -757,11 +760,12 @@ static void fs_format_fat16() {
 static void vfs_seed_defaults() {
     char read_buffer[FILE_BUFFER_LIMIT + 1];
 
+    vfs_make_dir("0:\\data");
+
     if (!vfs_read_file("0:\\test.txt", read_buffer)) {
         vfs_write_file("0:\\test.txt", "Hello, curious user!");
     }
 
-    vfs_make_dir("0:\\data");
     vfs_make_dir("0:\\vgag");
 
     if (!vfs_read_file("0:\\music\\ode.md", read_buffer)) {
@@ -1078,7 +1082,7 @@ void vgag_list_current_dir() {
         if (!(e.attr & ATTR_DIRECTORY)) {
             if ((int)e.file_size > 999) {
                 dprintc(" (", 0x70);
-                dprintfloatc(((float)e.file_size/1000), 0x70);
+                dprintfloatcr(((float)e.file_size/1000), 0x70);
                 dprintc(" kb)", 0x70);
             }
             else {
@@ -1297,17 +1301,21 @@ void vgag_ls() {
             str_cpy(full + p, disp);
         }
 
-        if (is_hidden_path(full)) continue;
+        //if (is_hidden_path(full)) continue;
 
         if (e.attr & ATTR_DIRECTORY) dprintc("  [DIR] ", 0x70);
         else if (str_ends_with(disp, ".tbc")) dprintc("  [EXEC] ", 0x70);
         else if (str_ends_with(disp, ".c")) dprintc("  [PRGM] ", 0x70);
         else dprintc("  [FILE] ", 0x70);
         dprintc(disp, 0x70);
+        if (streq(disp, "data")) {
+            dputcharc(' ', 0x70);
+            dputcharc(0x0F, 0x70);
+        }
         if (!(e.attr & ATTR_DIRECTORY)) {
             if ((int)e.file_size > 999) {
                 dprintc(" (", 0x70);
-                dprintfloatc(((float)e.file_size/1000), 0x70);
+                dprintfloatcr(((float)e.file_size/1000), 0x70);
                 dprintc(" kb)", 0x70);
             }
             else {
@@ -1334,7 +1342,10 @@ void vgag_cd(int p) {
         return;
     }
 
-    //int checknum = 0;
+    int mod;
+
+    if (streq(cwd_path, "0:\\")) mod = 0;
+    else mod = 2;
 
     for (int i = 0; i < max_entries; i++) {
         FatDirEntry e;
@@ -1358,11 +1369,21 @@ void vgag_cd(int p) {
             str_cpy(full + p, disp);
         }
 
-        if ((i-1 == p) && (e.attr & ATTR_DIRECTORY)) {
-            cd(disp);
-            vgag_f4();
-            f4_arrows();
-            break;
+        if (is_hidden_path(full)) continue;
+
+        if (((i - mod) == p)) {
+            if (e.attr & ATTR_DIRECTORY) {
+                cd(disp);
+                vgag_f4();
+                f4_arrows();
+                break;
+            }
+            else {
+                f4_reset();
+                dcX = 41; dcY = 4;
+                vgag_read(disp);
+                break;
+            }
         }
         else {
             continue;

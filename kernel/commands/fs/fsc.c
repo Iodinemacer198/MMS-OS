@@ -16,8 +16,13 @@ extern bool vfs_remove_dir(const char* path);
 extern bool vfs_change_dir(const char* path);
 extern void vfs_get_cwd(char* out);
 extern void vfs_list_current_dir();
+extern void dprintc(const char* str, uint8_t color);
+extern void dputcharc(unsigned char c, uint8_t color);
 
 extern int cursorX;
+
+extern int dcX;
+extern int dcY;
 
 static bool contains_sep(const char* str) {
     for (int i = 0; str[i] != '\0'; i++) {
@@ -145,6 +150,56 @@ void read(char* path) {
         print("Error: ");
         print(path);
         println(" not found.");
+    }
+}
+
+void vgag_print_wrapped(const char* text, uint8_t color) {
+    int i = 0;
+    int m = 0;
+
+    while (text[i]) {
+
+        if (text[i] == '\n') {
+            dcY++;
+            dcX = 41;
+            i++;
+            continue;
+        }
+
+        if (dcX >= 72) {
+            dcY++;
+            dcX = 41;
+        }
+
+        if (dcY >= 20) {
+            dcX = 41; dcY = 21;
+            m = 1;
+            dprintc("...", 0x70);
+        }
+
+        if (m==0) dputcharc(text[i], color);
+
+        i++;
+    }
+}
+
+void vgag_read(char* path) {
+    if (contains_sep(path)) {
+        dprintc("Use a single file name (no path separators).", 0x70);
+        return;
+    }
+
+    path_prepend(path);
+
+    char read_buffer[8092];
+    if (vfs_read_file(path, read_buffer)) {
+        vgag_print_wrapped(read_buffer, 0x70);
+        dcX = 41; dcY++;
+    }
+    else {
+        dprintc("Error: ", 0x70);
+        dprintc(path, 0x70);
+        dprintc(" not found.", 0x70);
     }
 }
 

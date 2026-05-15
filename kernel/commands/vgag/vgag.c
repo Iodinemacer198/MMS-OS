@@ -389,6 +389,57 @@ void vgag_bigbox() {
     dcX = 0; dcY = 0;
 }
 
+void vgag_splitbigbox() {
+    dcX = 6; dcY = 3;
+    dputcharc(0xC9, 0x70); dprintmultc(0xCD, 66, 0x70); dputcharc(0xBB, 0x70); // Top
+
+    dcX = 6; dcY = 4;
+    while (dcY < 22) {
+        dputcharc(0xBA, 0x70);
+        dcY++;
+        dcX = 6;
+    } // Left side
+
+    dcX = 73; dcY = 4;
+    while (dcY < 22) {
+        dputcharc(0xBA, 0x70);
+        dcY++;
+        dcX = 73;
+    } // right side
+
+    dcX = 6; dcY = 22;
+    dputcharc(0xC8, 0x70); dprintmultc(0xCD, 66, 0x70); dputcharc(0xBC, 0x70); // Bottom
+
+    dcX = 7; dcY = 4;
+    while (dcY < 22) {
+        dprintmultc(0xDB, 66, 0x7);
+        dcX = 7;
+        dcY++;
+    } // Fill
+
+    dcX = 7; dcY = 23;
+    dprintmultc(0xDF, 68, 0x10); 
+    dcX = 74; dcY = 4;
+    while (dcY < 23) {
+        dputcharc(0xDB, 0x0);
+        dcY++;
+        dcX = 74;
+    } // Shadow
+
+    dcX = 40; dcY = 3;
+    dputcharc(0xCB, 0x70); 
+    dcX = 40; dcY = 4;
+    while (dcY < 22) {
+        dputcharc(0xBA, 0x70);
+        dcY++;
+        dcX = 40;
+    } // divider
+    dcX = 40; dcY = 22;
+    dputcharc(0xCA, 0x70);
+    
+    dcX = 0; dcY = 0;
+}
+
 void vgag_bigbox2() {
     dcX = 60; dcY = 3;
     dputcharc(0xC9, 0x70); dprintmultc(0xCD, 13, 0x70); dputcharc(0xBB, 0x70); // Top
@@ -905,7 +956,7 @@ int type_index = 0;
 
 void vgag_hello() {
     dcX = 11; dcY = 6; 
-    dprintc("Welcome to the MMS-OS VGAG mode!", 0x70);
+    dprintc("Welcome to the MMS-OS VGAG mode! ", 0x70); dputcharc(0x01, 0x70);
     dcX = 11; dcY = 7;
     dprintc("Use function keys to navigate menus", 0x70);
     dcX = 11; dcY = 9;
@@ -1226,7 +1277,7 @@ void f3_arrows() {
 
 void vgag_f4() {
     vgag_scblue();
-    vgag_bigbox();
+    vgag_splitbigbox();
     vgag_ls();
     dcX = 7; dcY = 6+f4i;
     dputcharc('>', 0x70);
@@ -1234,6 +1285,15 @@ void vgag_f4() {
     dprintc("  ", 0x70);
     dputcharc(0x1e, 0x70);
     dprintc(" Return to root", 0x70);
+}
+
+void f4_reset() {
+    dcX = 41; dcY = 4;
+    while (dcY < 22) {
+        dprintmultc(0xDB, 31, 0x7);
+        dcX = 41;
+        dcY++;
+    }
 }
 
 void f4_arrows() {
