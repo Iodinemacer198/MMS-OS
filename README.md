@@ -12,6 +12,8 @@ Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP opera
     - ┕> Welcome screen
     - ┕> Calculator
     - ┕> Bouncing ball simulation
+    - ┕> Custom "program" support
+    - ┕> Basic file explorer
 
 ## Use/Build instructions
 **Build from source:** (recommended)
