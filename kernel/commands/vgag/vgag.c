@@ -35,6 +35,7 @@ extern void vgag_execute(int f3i);
 extern void vfs_get_cwd(char* out);
 extern void vgag_ls();
 extern void vgag_cd();
+extern void vgag_mkf();
 
 extern uint16_t* vga;
 extern int cursorX;
@@ -1759,6 +1760,10 @@ void vgag_run() {
                     vgag_cd(f4i);
                     f4i = 0;
                     f4_arrows();
+                }
+                else if (key == 'm') {
+                    f4_reset();
+                    vgag_mkf();
                 }
                 else if (key == 140) {
                     if (f4i == 0) continue;

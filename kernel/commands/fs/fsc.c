@@ -134,6 +134,102 @@ void mkf(char* path2) {
     println("File saved.");
 }
 
+void vgag_mkf() {
+    int fileCount = vfs_file_count();
+    dcX = 41; dcY = 4;
+    if (fileCount >= 56) {
+        dprintc("Directory table is full! Use 'rmf' to delete some files!", 0x70);
+        return;
+    }
+
+    dprintc("Please enter the new file name:", 0x70); dcY++; dcX = 41;
+
+    char path2[512] = "";
+    int idx2 = 0;
+    bool running2 = true;
+    while (running2) {
+        char key = get_key();
+        if (!key) continue;
+
+        if (key == '\n') {
+            running2 = false;
+        }
+        else if (key == 8) {
+            if (idx2 > 0) {
+                idx2--;
+                path2[idx2] = '\0';
+                dcX--;
+                dputcharc(' ', 0x70);
+                dcX--;
+            }
+        }
+        else if (idx2 < 511) {
+            dputcharc(key, 0x70);
+            path2[idx2++] = key;
+            path2[idx2] = '\0';
+            if (dcX >= 72) {dcY++; dcX = 41;}
+        }
+    }
+
+    dcX = 41; dcY += 2;
+
+    if (contains_sep(path2)) {
+        dprintc("Use a single file name", 0x70);
+        return;
+    }
+
+    path_prepend(path2);
+
+    char temp[512] = "";
+    if (vfs_read_file(path2, temp)) {
+        dprintc("A file with this name exists!", 0x70);
+        return;
+    }
+
+    if (!vfs_write_file(path2, "")) {
+        dprintc("Error: Could not create file.", 0x70);
+        return;
+    }
+    dprintc("Write (:s + enter to save): ", 0x70); dcX = 41; dcY++;
+
+    char data[512] = "";
+    int idx = 0;
+    bool running = true;
+    while (running) {
+        char key = get_key();
+        if (!key) continue;
+
+        if (key == '\n' && idx >= 2 && data[idx - 1] == 's' && data[idx - 2] == ':') {
+            data[idx - 2] = '\0';
+            running = false;
+        }
+        else if (key == 8) {
+            if (idx > 0) {
+                idx--;
+                data[idx] = '\0';
+                dcX--;
+                dputcharc(' ', 0x70);
+                dcX--;
+            }
+        }
+        else if (idx < 511) {
+            if (key == '\n') {
+                dputcharc(key, 0x70);
+                dcX = 41;
+            }
+            else {
+                dputcharc(key, 0x70);
+                data[idx++] = key;
+                data[idx] = '\0';
+                if (dcX >= 72) {dcY++; dcX = 41;}
+            }
+        }
+    }
+
+    vfs_write_file(path2, data); dcX = 41; dcY++;
+    dprintc("File saved.", 0x70);
+}
+
 void read(char* path) {
     if (contains_sep(path)) {
         println("Use a single file name (no path separators).");
