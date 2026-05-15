@@ -1,4 +1,5 @@
-# MMS-OS
+<img width="500" height="250" alt="mmslogo" src="https://github.com/user-attachments/assets/f37abe1a-a8dd-4546-957a-198538198ba6" />
+
 Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP operating system made with C.
 
 ## Current Features & Overview
