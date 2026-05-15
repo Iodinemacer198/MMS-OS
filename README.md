@@ -30,7 +30,7 @@ Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP opera
 
 ## Contact
 This project is developed and maintained by the Molecular Multiverse Services team (just me so far, therealiodinemacer :D)
-For any questions, suggestions, issues, etc, feel free to reach out to @therealiodinemacer on Discord or join our server [here](https://discord.gg/ZAx3NN5TJY))
+For any questions, suggestions, issues, etc, feel free to reach out to @therealiodinemacer on Discord or join our server [here](https://discord.gg/ZAx3NN5TJY)
 
 ## Roadmap
 - ~~Better filesystem (preferably FAT)~~
