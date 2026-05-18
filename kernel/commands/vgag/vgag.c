@@ -36,6 +36,8 @@ extern void vfs_get_cwd(char* out);
 extern void vgag_ls();
 extern void vgag_cd();
 extern void vgag_mkf();
+extern void vgag_mkdir();
+extern void vgag_rmf(int f4p);
 
 extern uint16_t* vga;
 extern int cursorX;
@@ -1282,10 +1284,13 @@ void vgag_f4() {
     vgag_ls();
     dcX = 7; dcY = 6+f4i;
     dputcharc('>', 0x70);
-    dcX = 7; dcY = 21;
+    dcX = 7; dcY = 19;
     dprintc("  ", 0x70);
     dputcharc(0x1e, 0x70);
-    dprintc(" Return to root", 0x70);
+    dprintc(" Return", 0x70);
+    dcX = 7; dcY = 20;
+    dprintc("'m'-new file; 'n'-new dir;", 0x70); dcX = 7; dcY++;
+    dprintc("'r'-delete file/dir", 0x70);
 }
 
 void f4_reset() {
@@ -1299,7 +1304,7 @@ void f4_reset() {
 
 void f4_arrows() {
     dcX = 7; dcY = 6;
-    while (dcY < 22) {
+    while (dcY < 20) {
         dputcharc(0xDB, 0x77);
         dcY++;
         dcX = 7;
@@ -1765,12 +1770,20 @@ void vgag_run() {
                     f4_reset();
                     vgag_mkf();
                 }
+                else if (key == 'n') {
+                    f4_reset();
+                    vgag_mkdir();
+                }
+                else if (key == 'r') {
+                    f4_reset();
+                    vgag_rmf(f4i);
+                }
                 else if (key == 140) {
                     if (f4i == 0) continue;
                     else {f4i--; f4_arrows();}
                 }
                 else if (key == 141) {
-                    if (f4i == 15) continue;
+                    if (f4i == 13) continue;
                     else {f4i++; f4_arrows();}
                 }
             }

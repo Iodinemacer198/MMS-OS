@@ -18,6 +18,8 @@ extern void vfs_get_cwd(char* out);
 extern void vfs_list_current_dir();
 extern void dprintc(const char* str, uint8_t color);
 extern void dputcharc(unsigned char c, uint8_t color);
+extern void vgag_ls();
+extern void f4_reset();
 
 extern int cursorX;
 
@@ -59,6 +61,58 @@ void mkdir_cmd(char* name) {
         println("Directory created.");
     } else {
         println("Could not create directory.");
+    }
+}
+
+void vgag_mkdir() {
+    dcX = 41; dcY = 4;
+    dprintc("Please enter the directory name:", 0x70); dcY++; dcX = 41;
+
+    char name[512] = "";
+    int idx2 = 0;
+    bool running2 = true;
+    while (running2) {
+        char key = get_key();
+        if (!key) continue;
+
+        if (key == '\n') {
+            running2 = false;
+        }
+        else if (key == 8) {
+            if (idx2 > 0) {
+                idx2--;
+                name[idx2] = '\0';
+                dcX--;
+                dputcharc(' ', 0x70);
+                dcX--;
+            }
+        }
+        else if (idx2 < 511) {
+            dputcharc(key, 0x70);
+            name[idx2++] = key;
+            name[idx2] = '\0';
+            if (dcX >= 72) {dcY++; dcX = 41;}
+        }
+    }
+
+    dcX = 41; dcY += 2;
+
+    if (contains_sep(name)) {
+        dprintc("Use a single directory name.", 0x70);
+        return;
+    }
+
+    path_prepend(name);
+    if (vfs_make_dir(name)) {
+        f4_reset();
+        vgag_ls();
+        dcX = 41; dcY = 4;
+        dprintc("Directory created.", 0x70);
+    } else {
+        f4_reset();
+        vgag_ls();
+        dcX = 41; dcY = 4;
+        dprintc("Could not create directory.", 0x70);
     }
 }
 
@@ -174,7 +228,7 @@ void vgag_mkf() {
     dcX = 41; dcY += 2;
 
     if (contains_sep(path2)) {
-        dprintc("Use a single file name", 0x70);
+        dprintc("Use a single file name.", 0x70);
         return;
     }
 
@@ -226,7 +280,10 @@ void vgag_mkf() {
         }
     }
 
-    vfs_write_file(path2, data); dcX = 41; dcY++;
+    vfs_write_file(path2, data);
+    f4_reset();
+    vgag_ls();
+    dcX = 41; dcY = 4;
     dprintc("File saved.", 0x70);
 }
 
@@ -313,3 +370,6 @@ void rmf(char* path2) {
         println("File deleted.");
     }
 }
+
+
+

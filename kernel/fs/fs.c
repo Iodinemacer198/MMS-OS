@@ -23,6 +23,7 @@ extern void f4_arrows();
 extern void vgag_read(char* path);
 extern void dprintfloatcr(float num, uint8_t color);
 extern void f4_reset();
+extern void path_prepend(char* path);
 
 extern int dcX;
 extern int dcY;
@@ -1335,7 +1336,7 @@ void vgag_ls() {
 void vgag_cd(int p) {
     int max_entries = (cwd_cluster == ROOT_CLUSTER) ? FS_ROOT_ENTRIES : ((SECTOR_SIZE * FS_SECTORS_PER_CLUSTER) / 32);
 
-    if (p == 15) {
+    if (p == 13) {
         cd("..");
         vgag_f4();
         f4_arrows();
@@ -1389,5 +1390,146 @@ void vgag_cd(int p) {
             continue;
         }
     }
+}
+
+void vgag_rmf(int p) {
+    int max_entries = (cwd_cluster == ROOT_CLUSTER) ? FS_ROOT_ENTRIES : ((SECTOR_SIZE * FS_SECTORS_PER_CLUSTER) / 32);
+
+    int mod;
+
+    if (streq(cwd_path, "0:\\")) mod = 0;
+    else mod = 2;
+
+    for (int i = 0; i < max_entries; i++) {
+        FatDirEntry e;
+        if (!read_dir_entry(cwd_cluster, i, &e)) break;
+        if ((uint8_t)e.name[0] == 0x00 || (uint8_t)e.name[0] == 0xE5) continue;
+        if (e.attr == 0x0F) continue;
+
+        char disp[20];
+        name83_to_display(e.name, disp);
+
+        if (streq(disp, ".") || streq(disp, "..")) continue;
+
+        char full[MAX_PATH_LEN];
+        if (streq(cwd_path, "0:\\")) {
+            str_cpy(full, "0:\\");
+            str_cpy(full + 3, disp);
+        } else {
+            str_cpy(full, cwd_path);
+            int p = str_len(full);
+            full[p++] = '\\';
+            str_cpy(full + p, disp);
+        }
+
+        if (is_hidden_path(full)) continue;
+
+        if (((i - mod) == p)) {
+            if (e.attr & ATTR_DIRECTORY) {
+                dcX = 41; dcY = 4;
+                dprintc("Are you sure to delete:", 0x70); dcX = 41; dcY++;
+                dputcharc('"', 0x70);
+                dprintc(disp, 0x70);
+                dprintc("\"? y/n: ", 0x70);
+
+                char ans[4] = "";
+                int ans_index = 0;
+                bool running = true;
+
+                while (running) {
+                    char key = get_key();
+                    if (!key) continue;
+                    if (key == '\n') running = false;
+                    else if (key == 8) {
+                        if (ans_index > 0) {
+                            ans_index--;
+                            ans[ans_index] = '\0';
+                            cursorX--;
+                            dputcharc(' ', 0x70);
+                            cursorX--;
+                        }
+                    }
+                    else if ((key == 'y' || key == 'n') && ans_index < 3) {
+                        dputcharc(key, 0x70);
+                        ans[ans_index++] = key;
+                        ans[ans_index] = '\0';
+                    }
+                }
+
+                if (streq(ans, "y")) {
+                    path_prepend(disp);
+
+                    if (!vfs_remove_dir(disp)) {
+                        f4_reset();
+                        vgag_ls();
+                        dcX = 41; dcY = 4;
+                        dprintc("Directory not found.", 0x70);
+                    } else {
+                        f4_reset();
+                        vgag_f4();
+                        dcX = 41; dcY = 4;
+                        dprintc("Directory deleted.", 0x70);
+                    }
+                }
+                else {
+                    f4_reset();
+                }
+            }
+            else {
+                dcX = 41; dcY = 4;
+                dprintc("Are you sure to delete:", 0x70); dcX = 41; dcY++;
+                dputcharc('"', 0x70);
+                dprintc(disp, 0x70);
+                dprintc("\"? y/n: ", 0x70);
+
+                char ans[4] = "";
+                int ans_index = 0;
+                bool running = true;
+
+                while (running) {
+                    char key = get_key();
+                    if (!key) continue;
+                    if (key == '\n') running = false;
+                    else if (key == 8) {
+                        if (ans_index > 0) {
+                            ans_index--;
+                            ans[ans_index] = '\0';
+                            cursorX--;
+                            dputcharc(' ', 0x70);
+                            cursorX--;
+                        }
+                    }
+                    else if ((key == 'y' || key == 'n') && ans_index < 3) {
+                        dputcharc(key, 0x70);
+                        ans[ans_index++] = key;
+                        ans[ans_index] = '\0';
+                    }
+                }
+
+                if (streq(ans, "y")) {
+                    path_prepend(disp);
+
+                    if (!vfs_delete_file(disp)) {
+                        f4_reset();
+                        vgag_ls();
+                        dcX = 41; dcY = 4;
+                        dprintc("File not found.", 0x70);
+                    } else {
+                        f4_reset();
+                        vgag_f4();
+                        dcX = 41; dcY = 4;
+                        dprintc("File deleted.", 0x70);
+                    }
+                }
+                else {
+                    f4_reset();
+                }
+            }
+        }
+        else {
+            continue;
+        }
+    }
+    
 }
 
