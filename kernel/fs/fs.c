@@ -762,6 +762,7 @@ static void vfs_seed_defaults() {
     char read_buffer[FILE_BUFFER_LIMIT + 1];
 
     vfs_make_dir("0:\\data");
+    vfs_make_dir("0:\\user");
 
     if (!vfs_read_file("0:\\test.txt", read_buffer)) {
         vfs_write_file("0:\\test.txt", "Hello, curious user!");
@@ -769,10 +770,10 @@ static void vfs_seed_defaults() {
 
     vfs_make_dir("0:\\vgag");
 
-    if (!vfs_read_file("0:\\music\\ode.md", read_buffer)) {
+    /*if (!vfs_read_file("0:\\music\\ode.md", read_buffer)) {
         vfs_make_dir("0:\\music");
         vfs_write_file("0:\\music\\ode.md", "370 400\n370 400\n392 400\n440 400\n440 400\n392 400\n370 400\n330 400\n294 400\n294 400\n330 400\n370 400\n370 600\n330 200\n330 800");
-    }
+    }*/
     if (!vfs_read_file("0:\\programs\\demo.c", read_buffer) || !streq(read_buffer, default_demo_source)) {
         vfs_make_dir("0:\\programs");
         vfs_write_file("0:\\programs\\demo.c", default_demo_source);
@@ -1011,6 +1012,8 @@ void vfs_list_current_dir() {
         if (e.attr & ATTR_DIRECTORY) print("[DIR] ");
         else if (str_ends_with(disp, ".tbc")) print("[EXEC] ");
         else if (str_ends_with(disp, ".c")) print("[PRGM] ");
+        else if (str_ends_with(disp, ".txt")) print("[TEXT] ");
+        else if (str_ends_with(disp, ".md")) print("[MUSC] ");
         else print("[FILE] ");
         print(disp);
         if (!(e.attr & ATTR_DIRECTORY)) {
@@ -1307,6 +1310,8 @@ void vgag_ls() {
         if (e.attr & ATTR_DIRECTORY) dprintc("  [DIR] ", 0x70);
         else if (str_ends_with(disp, ".tbc")) dprintc("  [EXEC] ", 0x70);
         else if (str_ends_with(disp, ".c")) dprintc("  [PRGM] ", 0x70);
+        else if (str_ends_with(disp, ".txt")) dprintc("  [TEXT] ", 0x70);
+        else if (str_ends_with(disp, ".md")) dprintc("  [MUSC] ", 0x70);
         else dprintc("  [FILE] ", 0x70);
         dprintc(disp, 0x70);
         if (streq(disp, "data")) {
@@ -1314,7 +1319,12 @@ void vgag_ls() {
             dputcharc(0x0F, 0x70);
         }
         if (!(e.attr & ATTR_DIRECTORY)) {
-            if ((int)e.file_size > 999) {
+            if ((int)e.file_size > 999999) {
+                dprintc(" (", 0x70);
+                dprintfloatcr(((float)e.file_size/1000000), 0x70);
+                dprintc(" mb)", 0x70);
+            }
+            else if ((999999 > (int)e.file_size) && ((int)e.file_size > 999)) {
                 dprintc(" (", 0x70);
                 dprintfloatcr(((float)e.file_size/1000), 0x70);
                 dprintc(" kb)", 0x70);

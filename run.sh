@@ -2,7 +2,7 @@
 set -e
 
 FILE="disk.img"
-TARGET_SIZE="1G"
+TARGET_SIZE="100M"
 
 if [ -f "$FILE" ]; then
     qemu-img resize -f raw "$FILE" "$TARGET_SIZE" >/dev/null

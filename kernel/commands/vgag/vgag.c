@@ -857,8 +857,8 @@ void vgag_mol() {
     vgag_printlnm("                        ***      ***      ");
     vgag_printlnm("                          *               ");
     vgag_printlnm("                           **             ");
-    vgag_printlnm("                                          ");
     vgag_printlnm("                  MMS - OS                ");
+    vgag_printlnm("                                          ");
     dcX = 80; dcY = 25;
     sleep(5000);
     beep(660, 500);

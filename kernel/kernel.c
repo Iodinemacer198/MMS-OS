@@ -576,7 +576,7 @@ void run_command() {
         println("help : This page!                     |  about : OS information");
         println("calc : Simple calculator              |  clear : Clears the screen");
         println("time : Display current time and date  |  wordle : Plays a game of Wordle");
-        println("music : Plays a test music file       |  test: Test an in-dev feature");
+        println("test: Test an in-dev feature          |  ");
         println("                                      |");
         println("ls : List current directory           |  pwd : Show current path");
         println("cd : Change current directory         |  mkdir : Create directory");
