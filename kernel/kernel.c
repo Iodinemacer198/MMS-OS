@@ -11,12 +11,142 @@
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 
-uint16_t* vga = (uint16_t*)0xB8000;
 
 int cursorX = 0;
 int cursorY = 0;
 
 uint8_t color = 0x0F;
+
+#define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
+#define MULTIBOOT_INFO_FRAMEBUFFER_INFO 0x00001000
+
+struct multiboot_info {
+    uint32_t flags;
+    uint32_t mem_lower;
+    uint32_t mem_upper;
+    uint32_t boot_device;
+    uint32_t cmdline;
+    uint32_t mods_count;
+    uint32_t mods_addr;
+    uint32_t syms[4];
+    uint32_t mmap_length;
+    uint32_t mmap_addr;
+    uint32_t drives_length;
+    uint32_t drives_addr;
+    uint32_t config_table;
+    uint32_t boot_loader_name;
+    uint32_t apm_table;
+    uint32_t vbe_control_info;
+    uint32_t vbe_mode_info;
+    uint16_t vbe_mode;
+    uint16_t vbe_interface_seg;
+    uint16_t vbe_interface_off;
+    uint16_t vbe_interface_len;
+    uint64_t framebuffer_addr;
+    uint32_t framebuffer_pitch;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    uint8_t framebuffer_bpp;
+    uint8_t framebuffer_type;
+    uint8_t color_info[6];
+} __attribute__((packed));
+
+static uint16_t vga_shadow[VGA_WIDTH * VGA_HEIGHT];
+uint16_t* vga = vga_shadow;
+
+static uint8_t* framebuffer = 0;
+static uint32_t framebuffer_pitch = 0;
+static uint32_t framebuffer_width = 0;
+static uint32_t framebuffer_height = 0;
+static uint8_t framebuffer_bpp = 0;
+static bool framebuffer_ready = false;
+
+static const uint8_t font5x7[][7] = {
+    ['0']={0x0E,0x11,0x13,0x15,0x19,0x11,0x0E}, ['1']={0x04,0x0C,0x04,0x04,0x04,0x04,0x0E},
+    ['2']={0x0E,0x11,0x01,0x02,0x04,0x08,0x1F}, ['3']={0x1E,0x01,0x01,0x0E,0x01,0x01,0x1E},
+    ['4']={0x02,0x06,0x0A,0x12,0x1F,0x02,0x02}, ['5']={0x1F,0x10,0x10,0x1E,0x01,0x01,0x1E},
+    ['6']={0x06,0x08,0x10,0x1E,0x11,0x11,0x0E}, ['7']={0x1F,0x01,0x02,0x04,0x08,0x08,0x08},
+    ['8']={0x0E,0x11,0x11,0x0E,0x11,0x11,0x0E}, ['9']={0x0E,0x11,0x11,0x0F,0x01,0x02,0x0C},
+    ['A']={0x0E,0x11,0x11,0x1F,0x11,0x11,0x11}, ['B']={0x1E,0x11,0x11,0x1E,0x11,0x11,0x1E},
+    ['C']={0x0E,0x11,0x10,0x10,0x10,0x11,0x0E}, ['D']={0x1E,0x11,0x11,0x11,0x11,0x11,0x1E},
+    ['E']={0x1F,0x10,0x10,0x1E,0x10,0x10,0x1F}, ['F']={0x1F,0x10,0x10,0x1E,0x10,0x10,0x10},
+    ['G']={0x0E,0x11,0x10,0x17,0x11,0x11,0x0F}, ['H']={0x11,0x11,0x11,0x1F,0x11,0x11,0x11},
+    ['I']={0x0E,0x04,0x04,0x04,0x04,0x04,0x0E}, ['J']={0x07,0x02,0x02,0x02,0x12,0x12,0x0C},
+    ['K']={0x11,0x12,0x14,0x18,0x14,0x12,0x11}, ['L']={0x10,0x10,0x10,0x10,0x10,0x10,0x1F},
+    ['M']={0x11,0x1B,0x15,0x15,0x11,0x11,0x11}, ['N']={0x11,0x19,0x15,0x13,0x11,0x11,0x11},
+    ['O']={0x0E,0x11,0x11,0x11,0x11,0x11,0x0E}, ['P']={0x1E,0x11,0x11,0x1E,0x10,0x10,0x10},
+    ['Q']={0x0E,0x11,0x11,0x11,0x15,0x12,0x0D}, ['R']={0x1E,0x11,0x11,0x1E,0x14,0x12,0x11},
+    ['S']={0x0F,0x10,0x10,0x0E,0x01,0x01,0x1E}, ['T']={0x1F,0x04,0x04,0x04,0x04,0x04,0x04},
+    ['U']={0x11,0x11,0x11,0x11,0x11,0x11,0x0E}, ['V']={0x11,0x11,0x11,0x11,0x11,0x0A,0x04},
+    ['W']={0x11,0x11,0x11,0x15,0x15,0x15,0x0A}, ['X']={0x11,0x11,0x0A,0x04,0x0A,0x11,0x11},
+    ['Y']={0x11,0x11,0x0A,0x04,0x04,0x04,0x04}, ['Z']={0x1F,0x01,0x02,0x04,0x08,0x10,0x1F},
+    [' ']={0,0,0,0,0,0,0}, ['.']={0,0,0,0,0,0x0C,0x0C}, [':']={0,0x0C,0x0C,0,0x0C,0x0C,0},
+    ['-']={0,0,0,0x1F,0,0,0}, ['_']={0,0,0,0,0,0,0x1F}, ['+']={0,0x04,0x04,0x1F,0x04,0x04,0},
+    ['*']={0,0x15,0x0E,0x1F,0x0E,0x15,0}, ['=']={0,0,0x1F,0,0x1F,0,0}, ['/']={0x01,0x02,0x02,0x04,0x08,0x08,0x10},
+    ['\\']={0x10,0x08,0x08,0x04,0x02,0x02,0x01}, ['>']={0x10,0x08,0x04,0x02,0x04,0x08,0x10}, ['<']={0x01,0x02,0x04,0x08,0x04,0x02,0x01},
+    ['!']={0x04,0x04,0x04,0x04,0x04,0,0x04}, ['?']={0x0E,0x11,0x01,0x02,0x04,0,0x04}, ['|']={0x04,0x04,0x04,0,0x04,0x04,0x04},
+    ['[']={0x0E,0x08,0x08,0x08,0x08,0x08,0x0E}, [']']={0x0E,0x02,0x02,0x02,0x02,0x02,0x0E}, ['(']={0x02,0x04,0x08,0x08,0x08,0x04,0x02}, [')']={0x08,0x04,0x02,0x02,0x02,0x04,0x08},
+};
+
+static uint32_t ega_to_rgb(uint8_t ega) {
+    static const uint32_t colors[16] = {0x000000,0x0000AA,0x00AA00,0x00AAAA,0xAA0000,0xAA00AA,0xAA5500,0xAAAAAA,0x555555,0x5555FF,0x55FF55,0x55FFFF,0xFF5555,0xFF55FF,0xFFFF55,0xFFFFFF};
+    return colors[ega & 0x0F];
+}
+
+static void framebuffer_put_pixel(uint32_t x, uint32_t y, uint32_t rgb) {
+    if (!framebuffer_ready || x >= framebuffer_width || y >= framebuffer_height) return;
+    uint8_t* pixel = framebuffer + y * framebuffer_pitch + x * (framebuffer_bpp / 8);
+    pixel[0] = rgb & 0xFF;
+    pixel[1] = (rgb >> 8) & 0xFF;
+    pixel[2] = (rgb >> 16) & 0xFF;
+    if (framebuffer_bpp == 32) pixel[3] = 0;
+}
+
+static void framebuffer_fill_cell(int cell_x, int cell_y, uint8_t cell_color) {
+    uint32_t bg = ega_to_rgb(cell_color >> 4);
+    for (uint32_t y = 0; y < 16; y++)
+        for (uint32_t x = 0; x < 8; x++)
+            framebuffer_put_pixel(cell_x * 8 + x, cell_y * 16 + y, bg);
+}
+
+static void framebuffer_draw_char(int cell_x, int cell_y, unsigned char c, uint8_t cell_color) {
+    if (!framebuffer_ready) return;
+    if (c >= 'a' && c <= 'z') c -= 32;
+    framebuffer_fill_cell(cell_x, cell_y, cell_color);
+    const uint8_t* glyph = font5x7[c];
+    uint32_t fg = ega_to_rgb(cell_color & 0x0F);
+    for (uint32_t row = 0; row < 7; row++) {
+        for (uint32_t col = 0; col < 5; col++) {
+            if (glyph[row] & (1 << (4 - col))) {
+                uint32_t px = cell_x * 8 + 1 + col;
+                uint32_t py = cell_y * 16 + 3 + row * 2;
+                framebuffer_put_pixel(px, py, fg);
+                framebuffer_put_pixel(px, py + 1, fg);
+            }
+        }
+    }
+}
+
+static void console_write_cell(int x, int y, unsigned char c, uint8_t cell_color) {
+    uint16_t value = ((uint16_t)cell_color << 8) | c;
+    vga_shadow[y * VGA_WIDTH + x] = value;
+    ((volatile uint16_t*)0xB8000)[y * VGA_WIDTH + x] = value;
+    framebuffer_draw_char(x, y, c, cell_color);
+}
+
+static void video_init(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
+    if (multiboot_magic != MULTIBOOT_BOOTLOADER_MAGIC || !multiboot_info_addr) return;
+    const struct multiboot_info* mbi = (const struct multiboot_info*)multiboot_info_addr;
+    if (!(mbi->flags & MULTIBOOT_INFO_FRAMEBUFFER_INFO) || mbi->framebuffer_type != 1) return;
+    if (mbi->framebuffer_bpp != 24 && mbi->framebuffer_bpp != 32) return;
+    framebuffer = (uint8_t*)(uint32_t)mbi->framebuffer_addr;
+    framebuffer_pitch = mbi->framebuffer_pitch;
+    framebuffer_width = mbi->framebuffer_width;
+    framebuffer_height = mbi->framebuffer_height;
+    framebuffer_bpp = mbi->framebuffer_bpp;
+    framebuffer_ready = framebuffer != 0;
+}
+
 
 static inline uint8_t inb(uint16_t port) {
     uint8_t result;
@@ -79,13 +209,13 @@ void scroll() {
     {
         for (int x = 0; x < VGA_WIDTH; x++)
         {
-            vga[y * VGA_WIDTH + x] = vga[(y + 1) * VGA_WIDTH + x];
+            console_write_cell(x, y, vga_shadow[(y + 1) * VGA_WIDTH + x] & 0xFF, vga_shadow[(y + 1) * VGA_WIDTH + x] >> 8);
         }
     }
 
     for (int x = 0; x < VGA_WIDTH; x++)
     {
-        vga[(VGA_HEIGHT - 1) * VGA_WIDTH + x] = (color << 8) | ' ';
+        console_write_cell(x, VGA_HEIGHT - 1, ' ', color);
     }
 }
 
@@ -97,7 +227,7 @@ void putchar(unsigned char c) {
     }
     else
     {
-        vga[cursorY * VGA_WIDTH + cursorX] = (color << 8) | c;
+        console_write_cell(cursorX, cursorY, c, color);
         cursorX++;
 
         if (cursorX >= VGA_WIDTH)
@@ -129,7 +259,7 @@ void println(const char* str) {
 void clear_screen() {
     for (int y = 0; y < VGA_HEIGHT; y++)
         for (int x = 0; x < VGA_WIDTH; x++)
-            vga[y * VGA_WIDTH + x] = (color << 8) | ' ';
+            console_write_cell(x, y, ' ', color);
 
     cursorX = 0;
     cursorY = 0;
@@ -191,7 +321,7 @@ void putcharc(unsigned char c, uint8_t color) {
     }
     else
     {
-        vga[cursorY * VGA_WIDTH + cursorX] = (color << 8) | c;
+        console_write_cell(cursorX, cursorY, c, color);
         cursorX++;
 
         if (cursorX >= VGA_WIDTH)
@@ -642,8 +772,7 @@ void run_command() {
 // Main loop
 
 void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
-    (void)multiboot_magic;
-    (void)multiboot_info_addr;
+    video_init(multiboot_magic, multiboot_info_addr);
     clear_screen();
 
     vfs_init();

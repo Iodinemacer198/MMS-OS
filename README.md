@@ -23,9 +23,9 @@ The boot path is:
 1. Firmware starts GRUB (`BOOTX64.EFI` on UEFI USB media, or GRUB El Torito on BIOS ISO media).
 2. GRUB loads `/boot/kernel.bin` through the Multiboot protocol.
 3. `boot/boot.asm` enters the kernel, preserves the Multiboot magic and information pointer, and calls `kernel_main`.
-4. The kernel runs in 32-bit protected mode and uses the existing ATA/file-system and command architecture.
+4. The kernel runs in 32-bit protected mode, initializes the Multiboot framebuffer when UEFI/GRUB provides one, and uses the existing ATA/file-system and command architecture.
 
-> Note: Secure Boot must be disabled unless you sign the generated `BOOTX64.EFI` yourself. MMS-OS still uses PS/2 keyboard and VGA-style text assumptions in parts of the shell/graphics stack, so compatibility is best on PCs/firmware that expose legacy-compatible input/video services after GRUB boots the kernel.
+> Note: Secure Boot must be disabled unless you sign the generated `BOOTX64.EFI` yourself. MMS-OS now renders its main text console to the Multiboot framebuffer for UEFI boots, but some WIP VGAG paths and keyboard input still have legacy PC hardware assumptions.
 
 ## Use/Build instructions
 **Build from source:** (recommended)
