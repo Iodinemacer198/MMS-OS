@@ -641,7 +641,9 @@ void run_command() {
 
 // Main loop
 
-void kernel_main() {
+void kernel_main(uint32_t multiboot_magic, uint32_t multiboot_info_addr) {
+    (void)multiboot_magic;
+    (void)multiboot_info_addr;
     clear_screen();
 
     vfs_init();
