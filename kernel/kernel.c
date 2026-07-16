@@ -109,12 +109,45 @@ static void framebuffer_fill_cell(int cell_x, int cell_y, uint8_t cell_color) {
             framebuffer_put_pixel(cell_x * 8 + x, cell_y * 16 + y, bg);
 }
 
+static unsigned char normalize_console_char(unsigned char c) {
+    if (c >= 'a' && c <= 'z') return c - 32;
+    switch (c) {
+        case 0xB3: case 0xBA: return '|';
+        case 0xC4: case 0xCD: return '-';
+        case 0xC9: case 0xBB: case 0xC8: case 0xBC:
+        case 0xDA: case 0xBF: case 0xC0: case 0xD9:
+        case 0xCB: case 0xCA: case 0xCC: case 0xBE:
+        case 0xC7: case 0xB6: return '+';
+        case 0x01: return '*';
+        case 0x0E: case 0x0F: return '*';
+        case 0x10: return '>';
+        case 0x1E: return '^';
+        default: return c;
+    }
+}
+
+static void framebuffer_draw_solid_cell(int cell_x, int cell_y, uint32_t rgb) {
+    for (uint32_t y = 0; y < 16; y++)
+        for (uint32_t x = 0; x < 8; x++)
+            framebuffer_put_pixel(cell_x * 8 + x, cell_y * 16 + y, rgb);
+}
+
 static void framebuffer_draw_char(int cell_x, int cell_y, unsigned char c, uint8_t cell_color) {
     if (!framebuffer_ready) return;
-    if (c >= 'a' && c <= 'z') c -= 32;
-    framebuffer_fill_cell(cell_x, cell_y, cell_color);
-    const uint8_t* glyph = font5x7[c];
+
     uint32_t fg = ega_to_rgb(cell_color & 0x0F);
+    if (c == 0xDB || c == 0xF0) {
+        framebuffer_draw_solid_cell(cell_x, cell_y, fg);
+        return;
+    }
+
+    c = normalize_console_char(c);
+    framebuffer_fill_cell(cell_x, cell_y, cell_color);
+
+    const uint32_t glyph_count = sizeof(font5x7) / sizeof(font5x7[0]);
+    if (c >= glyph_count) c = '?';
+
+    const uint8_t* glyph = font5x7[c];
     for (uint32_t row = 0; row < 7; row++) {
         for (uint32_t col = 0; col < 5; col++) {
             if (glyph[row] & (1 << (4 - col))) {
