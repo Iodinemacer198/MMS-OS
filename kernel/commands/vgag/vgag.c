@@ -1075,13 +1075,13 @@ void vgag_intro() {
 
 void vgag_about() {
     vgag_scc(0x00);
-    sleep(1000);
+    sleep(1500);
     vgag_scc(0x88);
-    sleep(1000);
+    sleep(1500);
     vgag_scc(0x77);
-    sleep(1000);
+    sleep(1500);
     vgag_scc(0xFF);
-    sleep(1000);
+    sleep(1500);
     dcX = 4; dcY = 3;
     dprintc("Molecular Multiverse Services OS:", 0xF0); dcX = 4; dcY = 4;
     dprintc("developed by the the MMS team with C.", 0xF0); dcX = 4; dcY = 6;
@@ -1109,9 +1109,9 @@ void vgag_about() {
         }
     }
     vgag_scc(0x77);
-    sleep(1000);
+    sleep(1500);
     vgag_scc(0x88);
-    sleep(2000);
+    sleep(1500);
     vgag_scc(0x00);
     clear_screen();
 }

@@ -413,6 +413,7 @@ static bool normalize_path(const char* path, char* out) {
 
 static bool is_hidden_path(const char* absolute_path) {
     return streq(absolute_path, "0:\\data") || str_starts_with(absolute_path, "0:\\data\\");
+    //return false;
 }
 
 static bool vgag_is_hidden_path(const char* absolute_path) {

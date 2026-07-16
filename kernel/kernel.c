@@ -610,6 +610,18 @@ void run_command() {
     else if (strscmp(cmd_buffer, "reset", 5)) vfs_reset();
     else if (strscmp(cmd_buffer, "vgag", 4)) vgag_run();
     else if (strscmp(cmd_buffer, "test", 4)) vgag_about();
+    else if (strscmp(cmd_buffer, "settings login", 14)) {
+        vfs_delete_file("0:\\data\\password.ini");
+        vfs_delete_file("0:\\data\\username.ini");
+        //clear_screen();
+        handle_login();
+    }
+    else if (strscmp(cmd_buffer, "settings", 8)) {
+        println("Settings:");
+        println("settings : This page!");
+        println("settings login : Reset login information");
+        println("settings load : Reset default load settings");
+    }
     else println("Unknown command");
 
     //println("");
