@@ -127,6 +127,19 @@ static void framebuffer_draw_char(int cell_x, int cell_y, unsigned char c, uint8
     }
 }
 
+
+void video_sync_cell(int x, int y) {
+    if (x < 0 || x >= VGA_WIDTH || y < 0 || y >= VGA_HEIGHT) return;
+    uint16_t cell = vga_shadow[y * VGA_WIDTH + x];
+    framebuffer_draw_char(x, y, cell & 0xFF, cell >> 8);
+}
+
+void video_flush_console(void) {
+    for (int y = 0; y < VGA_HEIGHT; y++)
+        for (int x = 0; x < VGA_WIDTH; x++)
+            video_sync_cell(x, y);
+}
+
 static void console_write_cell(int x, int y, unsigned char c, uint8_t cell_color) {
     uint16_t value = ((uint16_t)cell_color << 8) | c;
     vga_shadow[y * VGA_WIDTH + x] = value;

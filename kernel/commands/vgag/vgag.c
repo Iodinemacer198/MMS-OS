@@ -17,6 +17,8 @@ extern void printc(const char* str, uint8_t color);
 extern void putcharc(unsigned char c, uint8_t color);
 extern void printmult(unsigned char c, int l);
 extern void clear_screen();
+extern void video_sync_cell(int x, int y);
+extern void video_flush_console(void);
 extern void printmultc(unsigned char c, int l, uint8_t color);
 extern void reboot();
 extern bool vfs_read_file(const char* path, char* buffer_out);
@@ -73,6 +75,7 @@ void dputcharc(unsigned char c, uint8_t color) {
     else
     {
         vga[dcY * 80 + dcX] = (color << 8) | c;
+        video_sync_cell(dcX, dcY);
         dcX++;
 
         if (dcX >= 80)
@@ -1801,11 +1804,13 @@ void ind_login() {
     vgag_box();
     vgag_login();
     vgag_mol();
+    video_flush_console();
     dcX = 0; dcY = 0;
     if (vfs_read_file("0:\\data\\default.ini", default_buffer)) {
         if (strcmp(default_buffer, "1")) {}
         else if (strcmp(default_buffer, "2")) {
             vgag_run();
+            video_flush_console();
         }
         else {}
     }
