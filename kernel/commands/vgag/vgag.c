@@ -182,22 +182,27 @@ void dprintfloatcr(float num, uint8_t color) {
     dputcharc('0' + decimal, color);
 }
 
+static void vgag_set_cell(int x, int y, unsigned char c, uint8_t color) {
+    vga[y * 80 + x] = (color << 8) | c;
+    video_sync_cell(x, y);
+}
+
 void vgag_blue() {
     for (int y = 0; y < 25; y++)
         for (int x = 0; x < 80; x++)
-            vga[y * 80 + x] = (0x11 << 8) | 0xDB;
+            vgag_set_cell(x, y, 0xDB, 0x11);
 }
 
 void vgag_scc(uint8_t color) {
     for (int y = 0; y < 25; y++)
         for (int x = 0; x < 80; x++)
-            vga[y * 80 + x] = (color << 8) | 0xDB;
+            vgag_set_cell(x, y, 0xDB, color);
 }
 
 void vgag_scblue() {
     for (int y = 2; y < 25; y++)
         for (int x = 0; x < 80; x++)
-            vga[y * 80 + x] = (0x11 << 8) | 0xDB;
+            vgag_set_cell(x, y, 0xDB, 0x11);
 }
 
 int int_length(int value) {
