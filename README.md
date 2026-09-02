@@ -8,7 +8,7 @@ Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP opera
 - Wordle game
 - Basic file system with commands
 - Login system
-- A WIP VGA "graphics" (VGAG) system 
+- A WIP VGA "graphics" (VGAG [I know that when its spelled out it is weird]) system 
     - ┕> New login graphics
     - ┕> Welcome screen
     - ┕> Calculator
@@ -31,7 +31,7 @@ Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP opera
 
 ## Contact
 This project is developed and maintained by the Molecular Multiverse Services team (just me so far, therealiodinemacer :D)
-For any questions, suggestions, issues, etc, feel free to reach out to @therealiodinemacer on Discord or join our server [here](https://discord.gg/ZAx3NN5TJY)
+For any questions, suggestions, issues, etc, feel free to reach out to @therealiodinemacer on Discord or join our support server [here](https://discord.gg/ZAx3NN5TJY)
 
 ## Roadmap
 - ~~Better filesystem (preferably FAT)~~
@@ -40,5 +40,7 @@ For any questions, suggestions, issues, etc, feel free to reach out to @thereali
 
 ## Disclaimers
 MMS-OS is a VERY work-in-progress project. Lag, bugs, etc are to be expected. As more of a hobby project, also expect slow progress and a lack of functionality. This project is just for fun, don't expect much :)
+
+It can hardly even be considered an operating system, more of just some random stuff piled on top of a bootloader.
 
 Some AI was used in the making of this project, especially with parts of the initial setup or other complicated pieces. I really don't know too much of C, and this is the easiest way for me to learn the language while also making progress. Outside of the initial setup and components that I needed help with, it is however my work. If you doubt that, check some of the scripts, there's no way anyone other than a stupid human could make some of those...
