@@ -21,8 +21,9 @@ Molecular Multiverse Services Operating System, or simply MMS-OS, is a WIP opera
 - Requires a Linux system or Windows Subsystem for Linux
 - Git clone project to your preferred directory
 - Make sure you are in the project directory in your terminal AND have Qemu installed
-- Run `chmod +x build.sh` and `chmod +x run.sh`
+- Run `chmod +x build.sh run.sh`
 - First run `./build.sh`, then if successful run `./run.sh`
+    - If you get a `cannot execute: required file not found` error, please install dos2unix and run the commands for both build.sh and run.sh
 - Congrats! You are now in MMS-OS!
 
 **Use from release ISO:** (iso/output)
