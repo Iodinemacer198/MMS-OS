@@ -5,5 +5,6 @@
 #include <stdint.h>
 
 void handle_login();
+void handle_default();
 
 #endif

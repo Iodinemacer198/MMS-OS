@@ -199,3 +199,43 @@ void handle_login() {
         sleep(10000);
     }
 }
+
+char def_buffer[1];
+int def_index = 0;
+
+void handle_default() {
+    print("Default loading mode (1 for shell; 2 for VGAG): ");
+    bool defrunning = true;
+    while (defrunning) {
+        char key = get_key();
+
+        if (!key) {
+            continue;
+        }
+        else if (key == '\n') {
+            vfs_write_file("0:\\data\\default.ini", def_buffer);
+            defrunning = false;
+        }
+        else if (key == 8) {
+            if (def_index > 0) {
+                def_index--;
+                def_buffer[def_index] = '\0';
+                cursorX--;
+                putchar(' ');
+                cursorX--;
+            }
+        }
+        else {
+            if ((def_index < 1) && (key == '1' || key == '2')) {
+                putchar(key);
+                def_buffer[def_index] = key;
+                def_index++;
+            }
+            else {
+                continue;
+            }
+        }
+    }
+    putchar('\n');
+    println("Successfully changed load setting.");
+}

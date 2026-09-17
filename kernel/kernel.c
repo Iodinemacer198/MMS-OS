@@ -585,6 +585,7 @@ void run_command() {
         println("                                      |");
         println("reboot : Reboots system               |  shutdown : Shuts down system");
         println("reset : Resets system completely      |  vgag : Test the VGAG mode!");
+        println("settings : System settings            |");
     }
     else if (strscmp(cmd_buffer, "clear", 5)) clear_screen();
     else if (strscmp(cmd_buffer, "about", 5)) {
@@ -615,6 +616,11 @@ void run_command() {
         vfs_delete_file("0:\\data\\username.ini");
         //clear_screen();
         handle_login();
+    }
+    else if (strscmp(cmd_buffer, "settings load", 13)) {
+        vfs_delete_file("0:\\data\\default.ini");
+        //clear_screen();
+        handle_default();
     }
     else if (strscmp(cmd_buffer, "settings", 8)) {
         println("Settings:");
