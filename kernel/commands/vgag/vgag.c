@@ -925,19 +925,38 @@ void vgag_printlnmms(const char* str) {
     dcY++;
 }
 
+void vgag_printlnmms2(const char* str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] == '%') {
+            dputcharc('%', 0xFF);
+        }
+        else if (str[i] == '=') {
+            dputcharc('=', 0xF5);
+        }
+        else if (str[i] == '.') {
+            dputcharc(':', 0xF5);
+        }
+        else if (str[i] == ':') {
+            dputcharc(':', 0xF5);
+        }
+    }
+    dcX = 55;
+    dcY++;
+}
+
 void vgag_mms() {
     dcX = 55; dcY = 13;
-    vgag_printlnmms("@@@@%%%%@@%%*@@@@@@@");
-    vgag_printlnmms("@@#*@@@+%@%%%@@@@@@@");
-    vgag_printlnmms("@%#%@@%*#%#%%%@%@@@@");
-    vgag_printlnmms("%@@%#+#%###%%%@@@@@@");
-    vgag_printlnmms("%%##*++***+***#@@@@%");
-    vgag_printlnmms("@%#+===--*#++*#+#@@%");
-    vgag_printlnmms("@@#%%++======*++#@@@");
-    vgag_printlnmms("@@@@%##*++*+=##%#%%%");
-    vgag_printlnmms("@@@@%#%##########%%%");
-    vgag_printlnmms("@%%@@@@@@%%@@@@%%@@@");
-    vgag_printlnmms("@@@@@@@@@@@@@@@@@@%%");
+    vgag_printlnmms2("%%%%%%%%%%%%%%%%%%%%");
+    vgag_printlnmms2("%%%%%%..%%%%%%%%%%%%");
+    vgag_printlnmms2("%%%%%%..%%%%%%%%%%%%");
+    vgag_printlnmms2("%%%%%%.=%%%%%%%%%%%%");
+    vgag_printlnmms2("%%%%%.%=%%.%%%%.%%%%");
+    vgag_printlnmms2("%%%%%....%....%%.%%%");
+    vgag_printlnmms2("%%%%%%%%.%%%%.%..%%%");
+    vgag_printlnmms2("%.:.%%%%%%%%%%%%%%%%");
+    vgag_printlnmms2("%%.%%%%%%%%%%%%%%%%%");
+    vgag_printlnmms2("%%%%%%%%%%%%%%%%%%%%");
+    vgag_printlnmms2("%%%%%%%%%%%%%%%%%%%%");
 }
 
 /*
